@@ -1,0 +1,30 @@
+{
+  "name": "tmp-bot",
+  "version": "1.0.0",
+  "description": "A \"Trivia Murder Party\" discord bot - play completely automated \"Trivia Murder Party\" in discord!",
+  "main": "dist/index.js",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "@typescript-eslint/parser": "^4.28.0",
+    "eslint": "^7.29.0",
+    "typescript": "^4.3.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc && node ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GoogleFeud/tmp-bot.git"
+  },
+  "keywords": [],
+  "author": "GoogleFeud",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GoogleFeud/tmp-bot/issues"
+  },
+  "homepage": "https://github.com/GoogleFeud/tmp-bot#readme",
+  "dependencies": {
+    "detritus-client": "^0.15.3"
+  }
+}
