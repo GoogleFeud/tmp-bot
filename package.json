@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/GoogleFeud/tmp-bot#readme",
   "dependencies": {
-    "detritus-client": "^0.15.3"
+    "detritus-client": "^0.15.3",
+    "dotenv": "^10.0.0"
   }
 }
