@@ -1,10 +1,10 @@
 
 import { InteractionCallbackTypes } from "detritus-client/lib/constants";
-import { SlashCommand } from "detritus-client/lib/slash/command";
 import { SlashContext } from "detritus-client/lib/slash/context";
+import { CustomSlashCommand } from "../command";
 
 
-export default class Ping extends SlashCommand {
+export default class Ping extends CustomSlashCommand {
     constructor() {
         super({
             name: "ping",
