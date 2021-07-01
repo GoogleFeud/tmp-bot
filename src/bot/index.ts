@@ -20,8 +20,7 @@ export default async (): Promise<void> => {
     });
     
 
-    await client.addMultipleIn(`${__dirname}/commands`, {isAbsolute: true, subdirectories: true});
-    console.log(client.commands);
-    await client.run();
-    await client.uploadApplicationCommands();
+    await client.addMultipleIn("bot/commands", {isAbsolute: false, subdirectories: true});
+    const cluster = await client.run();
+    await cluster.rest.bulkOverwriteApplicationCommands(cluster.applicationId, client.commands.toArray());
 };

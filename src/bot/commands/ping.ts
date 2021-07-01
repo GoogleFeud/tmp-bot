@@ -4,7 +4,7 @@ import { SlashCommand } from "detritus-client/lib/slash/command";
 import { SlashContext } from "detritus-client/lib/slash/context";
 
 
-export class Ping extends SlashCommand {
+export default class Ping extends SlashCommand {
     constructor() {
         super({
             name: "ping",
