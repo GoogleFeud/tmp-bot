@@ -1,6 +1,7 @@
 
 import { InteractionCallbackTypes, MessageComponentButtonStyles, MessageComponentTypes } from "detritus-client/lib/constants";
 import { SlashContext } from "detritus-client/lib/slash/context";
+import Bitfield from "../../utils/Bitfield";
 import { CustomSlashCommand } from "../command";
 
 
@@ -8,55 +9,55 @@ export default class Ping extends CustomSlashCommand {
     constructor() {
         super({
             name: "ping",
-            description: "Ping... pong!"
+            description: "Ping... pong!",
+            customPerms: new Bitfield(Bitfield.MUST_BE_IN_GAME)
         });
     }
      
     async run(ctx: SlashContext) : Promise<void> {
         if (!ctx.channelId) return;
-        const game = ctx.slashCommandClient.games.get(ctx.channelId);
-        await ctx.respond({
+        ctx.respond({
             type: InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE,
             data: {
-                content: "This is a test!",
-                components: [
-                    {
-                        type: MessageComponentTypes.ACTION_ROW,
-                        components: [
-                            {
-                                type: MessageComponentTypes.BUTTON,
-                                customId: "A",
-                                style: MessageComponentButtonStyles.PRIMARY,
-                                label: "A"
-                            },
-                            {
-                                type: MessageComponentTypes.BUTTON,
-                                customId: "B",
-                                style: MessageComponentButtonStyles.SECONDARY,
-                                label: "B"
-                            }
-                        ]
-                    },
-                    {
-                        type: MessageComponentTypes.ACTION_ROW,
-                        components: [
-                            {
-                                type: MessageComponentTypes.SELECT_MENU,
-                                customId: "C",
-                                options: [
-                                    { label: "A", value: "A" },
-                                    { label: "B", value: "B" },
-                                    {label: "C", value: "C" }
-                                ]
-                            }
-                        ]
-                    }
-                ]
+                content: "REEEEE"
             }
-        }); 
-        const res = await game?.button_collector(ctx.id, {filter: (user) => user.user.id === "ass"});
+        })
+        const game = ctx.slashCommandClient.games.get(ctx.channelId);
+        const res = await game?.button_collector({
+            buttons: [
+                {
+                    style: MessageComponentButtonStyles.PRIMARY,
+                    label: "A"
+                },
+                {
+                    style: MessageComponentButtonStyles.SECONDARY,
+                    label: "B"
+                },
+                {
+                    style: MessageComponentButtonStyles.SECONDARY,
+                    label: "C"
+                },
+                {
+                    style: MessageComponentButtonStyles.SECONDARY,
+                    label: "D"
+                },
+                {
+                    style: MessageComponentButtonStyles.SECONDARY,
+                    label: "E"
+                },
+                {
+                    style: MessageComponentButtonStyles.SECONDARY,
+                    label: "F"
+                }
+            ],
+            limit: 5,
+            timeout: 30000,
+            unique: true,
+            content: "This is a test!",
+            sendTo: ctx.channelId
+        });
         console.log(res?.entries);
-        res?.interaction.editResponse({
+        res?.interaction?.editResponse({
             components: []
         });
     }

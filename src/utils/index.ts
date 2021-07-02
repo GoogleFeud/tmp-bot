@@ -6,7 +6,7 @@ export function errorMsg(content: string, ctx: SlashContext, quiet = true) : fal
     ctx.respond({
         type: InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-            content: `> ❌ | ${content}`,
+            content: `> **❌ ${content}**`,
             flags: quiet ? 1 << 6:undefined,
             allowedMentions: { parse: [] }
         }
@@ -18,7 +18,7 @@ export function successMsg(content: string, ctx: SlashContext, quiet = true) : t
     ctx.respond({
         type: InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE,
         data: {
-            content: `> ✔️ | ${content}`,
+            content: `> ✔️ **${content}**`,
             flags: quiet ? 1 << 6:undefined,
             allowedMentions: { parse: [] }
         }
