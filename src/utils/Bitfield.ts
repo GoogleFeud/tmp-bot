@@ -27,10 +27,6 @@ export default class Bitfield {
         return (this.bits & bit) === bit;
     }
 
-    static default() : Bitfield {
-        return new this(this.REQUIRES_GAME);
-    }
-
     static empty() : Bitfield {
         return new this();
     }
@@ -43,5 +39,4 @@ export default class Bitfield {
     static CANT_BE_DEAD = 1 << 4
     static CANT_BE_IN_GAME = 1 << 5
     static MUST_BE_IN_GAME = 1 << 6
-    static REQUIRES_GAME = 1 << 7
 }

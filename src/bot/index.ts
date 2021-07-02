@@ -19,6 +19,8 @@ export default async (): Promise<void> => {
         },
     });
 
+    client.games = new Map();
+
     await client.addMultipleIn("bot/commands", {isAbsolute: false, subdirectories: true});
     const cluster = await client.run();
     //await cluster.rest.bulkOverwriteApplicationCommands(cluster.applicationId, client.commands.toArray());
