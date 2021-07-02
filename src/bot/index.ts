@@ -1,6 +1,7 @@
 
 import { GatewayIntents } from "detritus-client-socket/lib/constants";
 import { SlashCommandClient } from "detritus-client/lib/slashcommandclient";
+import { Trivia } from "../utils/Trivia";
 
 export default async (): Promise<void> => {
     const client = new SlashCommandClient(process.env.TOKEN as string, {
@@ -20,6 +21,8 @@ export default async (): Promise<void> => {
     });
 
     client.games = new Map();
+    client.trivia = new Trivia();
+    await client.trivia.getSession();
 
     await client.addMultipleIn("bot/commands", {isAbsolute: false, subdirectories: true});
     const cluster = await client.run();
