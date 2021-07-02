@@ -1,13 +1,16 @@
 
 import fetch from "node-fetch";
+import { shuffleArray } from ".";
 
 export interface TriviaQuestion {
     category: string,
     difficulty: string,
     question: string,
     correct_answer: string,
-    incorrect_answers: Array<string>
+    incorrect_answers: Array<string>,
+    all_answers: Array<string>
 }
+
 
 export const enum TriviaResponseCodes {
     SUCCESS,
@@ -35,7 +38,7 @@ export class Trivia {
 
     async fetch(amount = 50) : Promise<void> {
         if (!this.session) await this.getSession();
-        const res = await fetch(`https://opentdb.com/api.php?amount=${amount}&type=multiple&token=${this.session}`).then(obj => obj.json());
+        const res = await fetch(`https://opentdb.com/api.php?amount=${amount}&type=multiple&token=${this.session}&encode=url3986`).then(obj => obj.json());
         if (res.response_code === TriviaResponseCodes.TOKEN_NOT_FOUND) {
             await this.getSession();
             await this.fetch(amount);
@@ -44,6 +47,14 @@ export class Trivia {
         else if (res.response_code === TriviaResponseCodes.TOKEN_EMPTY || res.response_code === TriviaResponseCodes.NO_RESULTS) {
             await this.resetSession();
             await this.fetch(amount);
+        }
+        for (const result of res.results) {
+            result.correct_answer = decodeURI(result.correct_answer);
+            result.incorrect_answers[0] = decodeURI(result.incorrect_answers[0]);
+            result.incorrect_answers[1] = decodeURI(result.incorrect_answers[1]);
+            result.incorrect_answers[2] = decodeURI(result.incorrect_answers[2]);
+            result.all_answers = shuffleArray([result.correct_answer, ...result.incorrect_answers]);
+
         }
         this.cache.push(...res.results);
     }

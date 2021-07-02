@@ -33,7 +33,8 @@ export interface ButtonCollectorOptions {
     onError?: (cause: ButtonCollectorErrorCauses, user: ButtonCollectorEntry, interaction: Interaction) => void,
     timeout?: number,
     buttons: Array<Button>,
-    content: string,
+    content?: string,
+    embed?: RequestTypes.CreateChannelMessageEmbed
     sendTo: SlashContext|string
 }
 
@@ -49,13 +50,14 @@ export function buttonCollector(client: ShardClient, settings: ButtonCollectorOp
         if (typeof settings.sendTo === "string") {
             await client.rest.createMessage(settings.sendTo, {
                 content: settings.content,
+                embed: settings.embed,
                 components
             });
             channelId = settings.sendTo;
         } else {
             await settings.sendTo.respond({
                 type: InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE,
-                data: { components, content: settings.content }
+                data: { components, content: settings.content, embeds: settings.embed ? [settings.embed]:[] }
             });
             lastInteraction = settings.sendTo.interaction;
             channelId = settings.sendTo.channelId;
@@ -128,11 +130,4 @@ export function formatButtons(id: string, buttons: Array<Button>) : {
     }
     if (currentRow.components.length) res.push(currentRow);
     return {components: res, ids: listOfIds};
-}
-
-export class ButtonCollector {
-    id: string
-    constructor() {
-        this.id = (Math.floor(Math.random() * 100)).toString() + Date.now() + Math.floor(Math.random() * 100)
-    }
 }

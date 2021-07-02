@@ -9,7 +9,7 @@ export default class Join extends CustomSlashCommand {
         super({
             name: "join",
             description: "Join a game of trivia murder party!",
-            customPerms: new Bitfield(Bitfield.CANT_BE_IN_GAME)
+            customPerms: new Bitfield(Bitfield.CANT_BE_IN_GAME, Bitfield.GAME_CANT_BE_STARTED)
         });
     }
 

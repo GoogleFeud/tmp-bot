@@ -10,10 +10,10 @@ interface CustomSlashCommandOptions extends SlashCommandOptions {
 
 
 export class CustomSlashCommand extends SlashCommand {
-    customPerms: Bitfield
+    customPerms?: Bitfield
     constructor(data: CustomSlashCommandOptions) {
         super(data);
-        this.customPerms = data.customPerms ? data.customPerms:Bitfield.empty();
+        this.customPerms = data.customPerms
     }
 
     onBeforeRun(ctx: SlashContext) : Promise<boolean>|boolean {
@@ -23,6 +23,9 @@ export class CustomSlashCommand extends SlashCommand {
             game = new Game(ctx.channelId, ctx.client);
             ctx.slashCommandClient.games.set(ctx.channelId, game);
         }
+        if (this.customPerms) {
+        if (game.started && this.customPerms.has(Bitfield.GAME_CANT_BE_STARTED)) return errorMsg("You can only use this command while the game isn't going", ctx);
+        if (!game.started && this.customPerms.has(Bitfield.GAME_MUST_BE_STARTED)) return errorMsg("You can only use this command in-game", ctx);
         const player = game.players.get(ctx.userId);
         if (player) {
             if (this.customPerms.has(Bitfield.CANT_BE_IN_GAME)) return errorMsg("In order to use this command you must leave the game.", ctx);
@@ -35,6 +38,7 @@ export class CustomSlashCommand extends SlashCommand {
         } else {
             if (this.customPerms.has(Bitfield.MUST_BE_IN_GAME)) return errorMsg("You must be in th egame in order to use this command.", ctx);
         } 
+    }
         return true;
     }
 }
