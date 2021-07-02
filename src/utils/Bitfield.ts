@@ -3,7 +3,7 @@
 
 export default class Bitfield {
     bits: number
-    constructor(bits?: Array<number>) {
+    constructor(...bits: Array<number>) {
         this.bits = bits ? bits.reduce((acc, val) => acc | val, 0):0;
     }
 
@@ -27,6 +27,21 @@ export default class Bitfield {
         return (this.bits & bit) === bit;
     }
 
-    
+    static default() : Bitfield {
+        return new this(this.REQUIRES_GAME);
+    }
 
+    static empty() : Bitfield {
+        return new this();
+    }
+
+    static MUST_BE_HOST = 1 << 0
+    static CANT_BE_HOST = 1 << 1
+    static MUST_BE_GHOST = 1 << 2
+    static CANT_BE_GHOST = 1 << 3
+    static MUST_BE_DEAD = 1 << 5
+    static CANT_BE_DEAD = 1 << 4
+    static CANT_BE_IN_GAME = 1 << 5
+    static MUST_BE_IN_GAME = 1 << 6
+    static REQUIRES_GAME = 1 << 7
 }
