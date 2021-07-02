@@ -8,9 +8,14 @@ import { InteractionTypes, MessageComponentTypes } from "detritus-client/lib/con
 export interface ButtonCollectorParams {
     message: RequestTypes.CreateMessage,
     wait_for?: number, // How many clicks to wait for
-    filter?: (user: User) => boolean, // Filter out clicks
+    filter?: (user: ButtonCollectorRes) => boolean, // Filter out clicks
     unique?: boolean, // Accept only one click per user
-    onClick?: (user: User, interaction: Interaction) => boolean|null|void // Do something when a user clicks
+    onClick?: (user: ButtonCollectorRes, interaction: Interaction) => boolean|null|void // Do something when a user clicks
+}
+
+export interface ButtonCollectorRes {
+    choice: string,
+    user: User
 }
 
 export class Game {
@@ -27,22 +32,26 @@ export class Game {
         await this.client.rest.createMessage(this.channelId, content);
     }
 
-    async button_collector(params: ButtonCollectorParams) : Promise<Map<string, User>> {
+    async button_collector(params: ButtonCollectorParams) : Promise<Map<string, ButtonCollectorRes>> {
         await this.client.rest.createMessage(this.channelId, params.message);
         return new Promise((resolve) => {
-            const res = new Map<string, User>();
+            const res = new Map<string, ButtonCollectorRes>();
             const cb = ({interaction}: {interaction: Interaction}) => {
                 if (interaction.type === InteractionTypes.MESSAGE_COMPONENT && 
                     interaction.channel?.id === this.channelId &&
                     interaction.data instanceof InteractionDataComponent && 
                     interaction.data.componentType === MessageComponentTypes.BUTTON) {
-                    if (params.filter && !params.filter(interaction.user)) return;
+                    const obj = {
+                        user: interaction.user,
+                        choice: interaction.data.customId
+                    };
+                    if (params.filter && !params.filter(obj)) return;
                     if (params.unique && res.has(interaction.userId)) return;
-                    if (params.onClick && params.onClick(interaction.user, interaction)) {
+                    if (params.onClick && params.onClick(obj, interaction)) {
                         this.client.removeListener("interactionCreate", cb);
                         resolve(res);
                     }
-                    res.set(interaction.userId, interaction.user);
+                    res.set(interaction.userId, obj);
                     if (res.size === params.wait_for) {
                         this.client.removeListener("interactionCreate", cb);
                         resolve(res);
