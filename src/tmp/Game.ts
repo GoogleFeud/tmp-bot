@@ -9,6 +9,7 @@ export class Game {
     client: ShardClient
     channelId: string
     players: BaseCollection<string, Player>
+    started = false
     constructor(channelId: string, client: ShardClient) {
         this.channelId = channelId;
         this.players = new BaseCollection();
