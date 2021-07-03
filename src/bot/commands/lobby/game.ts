@@ -2,7 +2,7 @@ import { InteractionCallbackTypes } from "detritus-client/lib/constants";
 import { SlashContext } from "detritus-client/lib/slash";
 import { CustomSlashCommand } from "../../command";
 
-export default class Join extends CustomSlashCommand {
+export default class Game extends CustomSlashCommand {
     constructor() {
         super({
             name: "game",

@@ -49,14 +49,14 @@ export class Trivia {
             await this.fetch(amount);
         }
         for (const result of res.results) {
-            result.correct_answer = decodeURI(result.correct_answer);
-            result.incorrect_answers[0] = decodeURI(result.incorrect_answers[0]);
-            result.incorrect_answers[1] = decodeURI(result.incorrect_answers[1]);
-            result.incorrect_answers[2] = decodeURI(result.incorrect_answers[2]);
+            result.correct_answer = decodeURIComponent(result.correct_answer);
+            result.incorrect_answers[0] = decodeURIComponent(result.incorrect_answers[0]);
+            result.incorrect_answers[1] = decodeURIComponent(result.incorrect_answers[1]);
+            result.incorrect_answers[2] = decodeURIComponent(result.incorrect_answers[2]);
             result.all_answers = shuffleArray([result.correct_answer, ...result.incorrect_answers]);
-
+            result.question = decodeURIComponent(result.question);
+            this.cache.push(result);
         }
-        this.cache.push(...res.results);
     }
 
     async get() : Promise<TriviaQuestion> {

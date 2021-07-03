@@ -2,6 +2,7 @@
 import { InteractionCallbackTypes, MessageComponentButtonStyles, MessageComponentTypes } from "detritus-client/lib/constants";
 import { SlashContext } from "detritus-client/lib/slash/context";
 import Bitfield from "../../utils/Bitfield";
+import { buttonCollector } from "../../utils/ButtonCollector";
 import { CustomSlashCommand } from "../command";
 
 
@@ -22,8 +23,8 @@ export default class Ping extends CustomSlashCommand {
                 content: "REEEEE"
             }
         })
-        const game = ctx.slashCommandClient.games.get(ctx.channelId);
-        const res = await game?.button_collector({
+        const game = ctx.slashCommandClient.games.get(ctx.channelId)!;
+        const res = await buttonCollector(game?.client, {
             buttons: [
                 {
                     style: MessageComponentButtonStyles.PRIMARY,

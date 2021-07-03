@@ -9,7 +9,7 @@ interface CustomSlashCommandOptions extends SlashCommandOptions {
 }
 
 
-export class CustomSlashCommand extends SlashCommand {
+export class CustomSlashCommand<T = unknown> extends SlashCommand<T> {
     customPerms?: Bitfield
     constructor(data: CustomSlashCommandOptions) {
         super(data);
@@ -17,6 +17,7 @@ export class CustomSlashCommand extends SlashCommand {
     }
 
     onBeforeRun(ctx: SlashContext) : Promise<boolean>|boolean {
+        if (ctx.inDm || !ctx.channelId) return errorMsg("All of the bot's commands can only be used in the guild!", ctx);
         if (!ctx.channelId) return false;
         let game = ctx.slashCommandClient.games.get(ctx.channelId);
         if (!game) {

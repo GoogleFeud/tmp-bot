@@ -2,7 +2,7 @@ import { BaseCollection } from "detritus-client/lib/collections";
 import { Player } from "./Player";
 import { RequestTypes } from "detritus-client-rest/lib/types";
 import { ShardClient } from "detritus-client";
-import { Interaction } from "detritus-client/lib/structures";
+import { Interaction, Message } from "detritus-client/lib/structures";
 import { ButtonCollectorOptions, buttonCollector, ButtonCollectorEntry, ButtonCollectorErrorCauses } from "../utils/ButtonCollector";
 import { TriviaQuestion } from "../utils/Trivia";
 import { errorMsg, successMsg } from "../utils";
@@ -46,33 +46,41 @@ export class Game {
 
     async trivia() : Promise<void> {
         this.questionCount++;
-        const question = await this.client.slashCommandClient!.trivia.get();
-        if (!question) return;
+        const question = await this.client.slashCommandClient!.trivia.get()!;
         this.currentQuestion = question;
         const playersWhoCanAnswerCount = this.players.filter(p => !p.isDead).length;
-        const answers = await this.button_collector({
-            sendTo: this.channelId,
-            embed: {
-                title: `Question #${this.questionCount}`,
-                description: `${question.question}\n\nA) ${question.all_answers[0]}\nB) ${question.all_answers[1]}\nC) ${question.all_answers[2]}\nD) ${question.all_answers[3]}\n\n`,
+        const makeEmbed = (timer = true, answered = 0) => {
+            return {
+                title: `❓ Question #${this.questionCount}`,
+                description: `${timer ? "<a:30secs:860781903846309929>":""}\n${question.question}\n\nA) ${question.all_answers[0]}\nB) ${question.all_answers[1]}\nC) ${question.all_answers[2]}\nD) ${question.all_answers[3]}\n\n**${answered}/${playersWhoCanAnswerCount} answered**`,
                 footer: { text: "You have 30 seconds to answer!" }
-            },
+            }
+        }
+        let answeredAmount = 0;
+        let timeout;
+        const answers = await buttonCollector(this.client, {
+            sendTo: this.channelId,
+            embed: makeEmbed(),
             buttons: [
                 {
                     label: "A",
-                    style: MessageComponentButtonStyles.PRIMARY
+                    style: MessageComponentButtonStyles.PRIMARY,
+                    isCorrect: question.correct_answer === question.all_answers[0]
                 },
                 {
                     label: "B",
-                    style: MessageComponentButtonStyles.PRIMARY
+                    style: MessageComponentButtonStyles.PRIMARY,
+                    isCorrect: question.correct_answer === question.all_answers[1]
                 },
                 {
                     label: "C",
-                    style: MessageComponentButtonStyles.PRIMARY
+                    style: MessageComponentButtonStyles.PRIMARY,
+                    isCorrect: question.correct_answer === question.all_answers[2]
                 },
                 {
                     label: "D",
-                    style: MessageComponentButtonStyles.PRIMARY
+                    style: MessageComponentButtonStyles.PRIMARY,
+                    isCorrect: question.correct_answer === question.all_answers[3]
                 }
             ],
             unique: true,
@@ -88,19 +96,24 @@ export class Game {
                         break;
                  }
             },
+            onClick: (entry, interaction, all, msg) => {
+                answeredAmount++;
+                timeout = setTimeout(async () => {
+                    if (answeredAmount !== answeredAmount) return;
+                    msg!.edit({embed: makeEmbed(true, answeredAmount)});
+                }, 800);
+            },
             timeout: 30_000
         });
-        console.log(answers.entries);
+        clearTimeout(timeout);
+        await answers.message!.edit({embed: makeEmbed(false, answeredAmount), components: []});
+        for (const answer of answers.entries) {
+            if (answer.choice.isCorrect) this.send({content: `${answer.user.username} got it right!`});
+            else this.send({content: `${answer.user.username} got it wrong, the answer was ${question.correct_answer}!`});
+        } 
     }
 
-    async send(content: RequestTypes.CreateMessage) : Promise<void> {
-        await this.client.rest.createMessage(this.channelId, content);
-    }
-
-    async button_collector(params: ButtonCollectorOptions) : Promise<{
-        entries: Array<ButtonCollectorEntry>,
-        interaction?: Interaction
-    }> {
-        return buttonCollector(this.client, params);
+    async send(content: RequestTypes.CreateMessage) : Promise<Message> {
+        return this.client.rest.createMessage(this.channelId, content);
     }
 }

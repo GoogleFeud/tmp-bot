@@ -26,5 +26,6 @@ export default async (): Promise<void> => {
 
     await client.addMultipleIn("bot/commands", {isAbsolute: false, subdirectories: true});
     const cluster = await client.run();
-    //await cluster.rest.bulkOverwriteApplicationCommands(cluster.applicationId, client.commands.toArray());
+    //await cluster.rest.bulkOverwriteApplicationCommands(cluster.applicationId, client.commands.filter(cmd => !cmd.metadata.admin));
+    //if (process.env.ADMIN_GUILD) await cluster.rest.bulkOverwriteApplicationGuildCommands(cluster.applicationId, process.env.ADMIN_GUILD, client.commands.filter(cmd => cmd.metadata.admin));    
 };

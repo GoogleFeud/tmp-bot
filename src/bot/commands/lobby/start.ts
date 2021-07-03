@@ -4,7 +4,7 @@ import { successMsg } from "../../../utils";
 import Bitfield from "../../../utils/Bitfield";
 import { CustomSlashCommand } from "../../command";
 
-export default class Join extends CustomSlashCommand {
+export default class Start extends CustomSlashCommand {
     constructor() {
         super({
             name: "start",

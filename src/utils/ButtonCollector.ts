@@ -1,6 +1,6 @@
 import { ShardClient } from "detritus-client"
 import { InteractionCallbackTypes, InteractionTypes, MessageComponentButtonStyles, MessageComponentTypes } from "detritus-client/lib/constants"
-import { Interaction, InteractionDataComponent, User } from "detritus-client/lib/structures"
+import { Interaction, InteractionDataComponent, Message, User } from "detritus-client/lib/structures"
 import { RequestTypes } from "detritus-client-rest/lib/types";
 import { SlashContext } from "detritus-client/lib/slash";
 
@@ -29,26 +29,28 @@ export interface ButtonCollectorOptions {
     limit?: number, // How many clicks to wait for
     filter?: (user: ButtonCollectorEntry, interaction: Interaction) => boolean, // Filter out clicks
     unique?: boolean, // Accept only one click per user
-    onClick?: (user: ButtonCollectorEntry, interaction: Interaction) => boolean|null|void, // Do something when a user clicks
+    onClick?: (user: ButtonCollectorEntry, interaction: Interaction, all: Array<ButtonCollectorEntry>, message?: Message) => boolean|null|void, // Do something when a user clicks
     onError?: (cause: ButtonCollectorErrorCauses, user: ButtonCollectorEntry, interaction: Interaction) => void,
     timeout?: number,
     buttons: Array<Button>,
     content?: string,
-    embed?: RequestTypes.CreateChannelMessageEmbed
+    embed?: RequestTypes.CreateChannelMessageEmbed,
     sendTo: SlashContext|string
 }
 
 export function buttonCollector(client: ShardClient, settings: ButtonCollectorOptions) : Promise<{
     entries: Array<ButtonCollectorEntry>,
-    interaction?: Interaction
+    interaction?: Interaction,
+    message?: Message
 }> {
     return new Promise(async (resolve) => {
         const {ids, components} = formatButtons((Math.floor(Math.random() * 100)).toString() + Date.now(), settings.buttons);
 
+        let message: Message|undefined;
         let channelId: string|undefined;
         let lastInteraction: Interaction;
         if (typeof settings.sendTo === "string") {
-            await client.rest.createMessage(settings.sendTo, {
+            message = await client.rest.createMessage(settings.sendTo, {
                 content: settings.content,
                 embed: settings.embed,
                 components
@@ -81,9 +83,9 @@ export function buttonCollector(client: ShardClient, settings: ButtonCollectorOp
                 if (settings.filter && !settings.filter(obj, interaction)) return onError(ButtonCollectorErrorCauses.FILTER, obj, interaction);
                 if (settings.unique && entries.some(e => e.user.id === interaction.userId)) return onError(ButtonCollectorErrorCauses.UNIQUE, obj, interaction);
 
-                if (settings.onClick && settings.onClick(obj, interaction)) {
+                if (settings.onClick && settings.onClick(obj, interaction, entries, message)) {
                     client.removeListener("interactionCreate", cb);
-                    resolve({interaction, entries});
+                    resolve({interaction, entries, message});
                     clearTimeout(timeout);
                 }
 
@@ -91,7 +93,7 @@ export function buttonCollector(client: ShardClient, settings: ButtonCollectorOp
 
                 if (entries.length === settings.limit) {
                     client.removeListener("interactionCreate", cb);
-                    resolve({interaction, entries});
+                    resolve({interaction, entries, message});
                     clearTimeout(timeout);
                 }
 
@@ -105,7 +107,7 @@ export function buttonCollector(client: ShardClient, settings: ButtonCollectorOp
         if (settings.timeout) {
             timeout = setTimeout(() => {
                 client.removeListener("interactionCreate", cb);
-                resolve({interaction: lastInteraction, entries});
+                resolve({interaction: lastInteraction, entries, message});
             }, settings.timeout);
         }
     });
