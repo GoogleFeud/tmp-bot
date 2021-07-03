@@ -8,7 +8,8 @@ export interface TriviaQuestion {
     question: string,
     correct_answer: string,
     incorrect_answers: Array<string>,
-    all_answers: Array<string>
+    all_answers: Array<string>,
+    correct_answer_pos: number
 }
 
 
@@ -54,6 +55,7 @@ export class Trivia {
             result.incorrect_answers[1] = decodeURIComponent(result.incorrect_answers[1]);
             result.incorrect_answers[2] = decodeURIComponent(result.incorrect_answers[2]);
             result.all_answers = shuffleArray([result.correct_answer, ...result.incorrect_answers]);
+            result.correct_answer_pos = result.all_answers.indexOf(result.correct_answer);
             result.question = decodeURIComponent(result.question);
             this.cache.push(result);
         }

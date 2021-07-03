@@ -1,6 +1,6 @@
 import { InteractionCallbackTypes } from "detritus-client/lib/constants";
 import { SlashContext } from "detritus-client/lib/slash";
-import { successMsg } from "../../../utils";
+import { errorMsg, successMsg } from "../../../utils";
 import Bitfield from "../../../utils/Bitfield";
 import { CustomSlashCommand } from "../../command";
 
@@ -13,8 +13,10 @@ export default class Start extends CustomSlashCommand {
         });
     }
 
-    async run(ctx: SlashContext) : Promise<void> {
+    async run(ctx: SlashContext) : Promise<void|boolean> {
         const game = ctx.slashCommandClient.games.get(ctx.channelId!)!;
+        //if (game.players.size < 5) return errorMsg("There need to be at least 5 players in order for the game to start", ctx);
+        if (game.players.size > 20) return errorMsg("There cannot be more than 20 players in the game!", ctx);
         game.started = true;
         await successMsg("Game is starting...", ctx);
         game.movePhase();

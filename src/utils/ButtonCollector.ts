@@ -8,7 +8,7 @@ import { SlashContext } from "detritus-client/lib/slash";
 export interface Button {
     [key: string]: unknown,
     style: MessageComponentButtonStyles,
-    label?: string,
+    label: string,
     emoji?: RequestTypes.RawEmojiPartial,
     url?: string,
     disabled?: boolean,
@@ -27,7 +27,7 @@ export const enum ButtonCollectorErrorCauses {
 
 export interface ButtonCollectorOptions {
     limit?: number, // How many clicks to wait for
-    filter?: (user: ButtonCollectorEntry, interaction: Interaction) => boolean, // Filter out clicks
+    filter?: (user: ButtonCollectorEntry, interaction: Interaction) => boolean|null|void, // Filter out clicks
     unique?: boolean, // Accept only one click per user
     onClick?: (user: ButtonCollectorEntry, interaction: Interaction, all: Array<ButtonCollectorEntry>, message?: Message) => boolean|null|void, // Do something when a user clicks
     onError?: (cause: ButtonCollectorErrorCauses, user: ButtonCollectorEntry, interaction: Interaction) => void,
