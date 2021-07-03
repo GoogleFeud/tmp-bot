@@ -35,6 +35,18 @@ export function customMsg(data: RequestTypes.CreateInteractionResponseInnerPaylo
     });
 }
 
+export function customStyledMsg(emoji: string, content: string, ctx: SlashContext|Interaction, quiet = true) : true {
+    ctx.respond({
+        type: InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: {
+            content: `> ${emoji} **${content}**`,
+            flags: quiet ? 1 << 6:undefined,
+            allowedMentions: { parse: [] }
+        }
+    });
+    return true;
+}
+
 export function shuffleArray<T>(array: Array<T>) : Array<T> {
     let currentIndex = array.length,  randomIndex;
     while (0 !== currentIndex) {

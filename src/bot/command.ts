@@ -2,7 +2,7 @@
 import { InteractionCallbackTypes } from "detritus-client/lib/constants";
 import { SlashCommand, SlashCommandOptions, SlashContext } from "detritus-client/lib/slash";
 import { Game } from "../tmp/Game";
-import { errorMsg } from "../utils";
+import { customMsg, errorMsg } from "../utils";
 import Bitfield from "../utils/Bitfield";
 
 interface CustomSlashCommandOptions extends SlashCommandOptions {
@@ -46,7 +46,7 @@ export class CustomSlashCommand<T = unknown> extends SlashCommand<T> {
     }
 
     onRunError(ctx: SlashContext, args: unknown, err: unknown) : void {
-        if (!ctx.responded) errorMsg(`An error occured!\n\`\`\`${err}\`\`\``, ctx);
+        if (!ctx.responded) customMsg({ content: `> An error occured!\n\`\`\`${err}\`\`\`` }, ctx, true);
         else ctx.channel?.createMessage({content: `> An error occured!\n\`\`\`${err}\`\`\``});
     }
 }

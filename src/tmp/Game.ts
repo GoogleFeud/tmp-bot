@@ -48,7 +48,7 @@ export class Game {
                 this.trivia();
                 break;
             case GamePhases.TRIVIA:
-                this.clearPlayersBetweenPhases();
+                this.clearBetweenPhases();
                 this.phase = GamePhases.MINIGAME;
                 this.minigame();
         }
@@ -62,7 +62,7 @@ export class Game {
         const makeEmbed = (timer = true, answered = 0) => {
             return {
                 title: `❓ Question #${this.questionCount}`,
-                description: `${timer ? `🕜   ${process.env.COUNTDOWN_EMOJI}`:""}\n${question.question}\n\n${question.all_answers.map((answer, index) => `${indexToLetter[index]}) ${answer}`).join("\n")}\n\n**${answered}/${playersWhoCanAnswerCount} answered**`,
+                description: `${timer ? `🕜   ${process.env.COUNTDOWN_EMOJI}`:""}\n**${question.question}**\n\n${question.all_answers.map((answer, index) => `${indexToLetter[index]}) ${answer}`).join("\n")}\n\n**${answered}/${playersWhoCanAnswerCount} answered**`,
                 footer: { text: "You have 30 seconds to answer!" },
                 color: 0xba008f
             }
@@ -165,7 +165,7 @@ export class Game {
 
         setTimeout(() => {
             if (killingFloorPlayers.length === 0) {
-                this.clearPlayersBetweenPhases();
+                this.clearBetweenPhases();
                 this.trivia();
             }
             else this.movePhase();
@@ -176,7 +176,8 @@ export class Game {
         this.send({content: "It's time for a minigame!"});
     }
 
-    clearPlayersBetweenPhases() : void {
+    clearBetweenPhases() : void {
+        delete this.currentQuestion;
         for (const [, player] of this.players) {
             player.isSafe = false;
             player.minigameData = {};

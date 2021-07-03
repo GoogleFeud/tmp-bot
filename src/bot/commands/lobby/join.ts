@@ -12,11 +12,11 @@ export default class Join extends CustomSlashCommand {
         });
     }
 
-    run(ctx: SlashContext, _: undefined) : void {
+    run(ctx: SlashContext) : void {
         const player = new Player(ctx.userId);
         if (ctx.game.players.size === 0) player.isHost = true;
         ctx.game.players.set(ctx.userId, player);
-        ctx.slashCommandClient.commands.find(cmd => cmd.name === "game")!.run!(ctx, {});
+        ctx.slashCommandClient.commands.find(cmd => cmd.name === "game")!.run!(ctx, {title: "📥 Player joined"});
     }
 
 }

@@ -23,6 +23,6 @@ export default class Leave extends CustomSlashCommand {
                 player.isHost = true;
             }
         }
-        ctx.slashCommandClient.commands.find(cmd => cmd.name === "game")!.run!(ctx, {});
+        ctx.slashCommandClient.commands.find(cmd => cmd.name === "game")!.run!(ctx, {title: "📤 Player left"});
     }
 }

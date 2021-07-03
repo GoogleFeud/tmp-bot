@@ -10,7 +10,7 @@ export default class Game extends CustomSlashCommand {
         });
     }
 
-    run(ctx: SlashContext) : void {
+    run(ctx: SlashContext, params: {title: string}) : void {
         const game = ctx.game;
         const fields = [
             {
@@ -31,7 +31,7 @@ export default class Game extends CustomSlashCommand {
             type: InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE,
             data: {
                 embeds: [{
-                    title: "🔪 Trivia murder party game",
+                    title: params.title || "🔪 Trivia murder party game",
                     color: 0x9117e3,
                     fields
                 }]

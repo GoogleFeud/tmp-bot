@@ -17,7 +17,7 @@ export default class Start extends CustomSlashCommand {
         //if (ctx.game.players.size < 5) return errorMsg("There need to be at least 5 players in order for the game to start", ctx);
         if (ctx.game.players.size > 20) return errorMsg("There cannot be more than 20 players in the game!", ctx);
         ctx.game.started = true;
-        await ctx.slashCommandClient.commands.find(cmd => cmd.name === "game")!.run!(ctx, ctx.game);
+        await ctx.slashCommandClient.commands.find(cmd => cmd.name === "game")!.run!(ctx, {title: "The game is starting"});
         ctx.game.movePhase();
     }
 
