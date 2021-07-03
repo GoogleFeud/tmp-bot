@@ -14,12 +14,11 @@ export default class Start extends CustomSlashCommand {
     }
 
     async run(ctx: SlashContext) : Promise<void|boolean> {
-        const game = ctx.slashCommandClient.games.get(ctx.channelId!)!;
-        //if (game.players.size < 5) return errorMsg("There need to be at least 5 players in order for the game to start", ctx);
-        if (game.players.size > 20) return errorMsg("There cannot be more than 20 players in the game!", ctx);
-        game.started = true;
-        await successMsg("Game is starting...", ctx);
-        game.movePhase();
+        //if (ctx.game.players.size < 5) return errorMsg("There need to be at least 5 players in order for the game to start", ctx);
+        if (ctx.game.players.size > 20) return errorMsg("There cannot be more than 20 players in the game!", ctx);
+        ctx.game.started = true;
+        await ctx.slashCommandClient.commands.find(cmd => cmd.name === "game")!.run!(ctx, ctx.game);
+        ctx.game.movePhase();
     }
 
 }

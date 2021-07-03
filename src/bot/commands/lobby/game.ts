@@ -11,11 +11,11 @@ export default class Game extends CustomSlashCommand {
     }
 
     run(ctx: SlashContext) : void {
-        const game = ctx.slashCommandClient.games.get(ctx.channelId!)!;
+        const game = ctx.game;
         const fields = [
             {
                 name: "Players",
-                value: game.players.map(p => `${p}${p.isHost ? "👑":""}${p.isGhost ? "👻":""}${p.isDead ? "☠️":""}${game.started ? ` - ${p.money}$`:""}`).join("\n") || "None",
+                value: game.players.map(p => p.format(game)).join("\n") || "None",
                 inline: true
             }
         ]

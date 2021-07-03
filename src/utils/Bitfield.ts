@@ -32,10 +32,9 @@ export default class Bitfield {
     }
 
     static MUST_BE_HOST = 1 << 0
-    static CANT_BE_HOST = 1 << 1
-    static MUST_BE_GHOST = 1 << 2
-    static CANT_BE_GHOST = 1 << 3
-    static MUST_BE_DEAD = 1 << 5
+    static MUST_BE_GHOST = 1 << 1
+    static CANT_BE_GHOST = 1 << 2
+    static MUST_BE_DEAD = 1 << 3
     static CANT_BE_DEAD = 1 << 4
     static CANT_BE_IN_GAME = 1 << 5
     static MUST_BE_IN_GAME = 1 << 6

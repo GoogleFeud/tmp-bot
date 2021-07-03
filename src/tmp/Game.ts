@@ -27,6 +27,7 @@ export class Game {
     channelId: string
     players: BaseCollection<string, Player>
     started = false
+    paused = false
     phase = GamePhases.LOBBY
     currentQuestion?: TriviaQuestion
     questionCount = 0
@@ -103,7 +104,7 @@ export class Game {
             onError: (cause, user, interaction) => {
                  switch (cause) {
                     case ButtonCollectorErrorCauses.FILTER:
-                        if (this.players.get(user.user.id)!.lostFinger === user.choice.label) errorMsg(`You cannot select this answer because you cut off your ${optionToFinger[user.choice.label]} finger`, interaction)
+                        if (this.players.get(user.user.id)?.lostFinger === user.choice.label) errorMsg(`You cannot select this answer because you cut off your ${optionToFinger[user.choice.label]} finger`, interaction)
                         else errorMsg("You must be in the game and be alive in order to answer", interaction);
                         break;
                     case ButtonCollectorErrorCauses.UNIQUE:
@@ -145,12 +146,12 @@ export class Game {
                 fields: [
                     {
                         name: "Safe players",
-                        value: this.players.filter(p => p.isSafe).map(p => `${p} - ${p.money}$`).join("\n") || "Nobody",
+                        value: this.players.filter(p => p.isSafe).map(p => p.format(this)).join("\n") || "Nobody",
                         inline: true
                     },
                     {
                         name: "Killing floor",
-                        value: killingFloorPlayers.map(p => `${p} - ${p.money}$`).join("\n") || "Nobody",
+                        value: killingFloorPlayers.map(p => p.format(this)).join("\n") || "Nobody",
                         inline: true
                     },
                     {

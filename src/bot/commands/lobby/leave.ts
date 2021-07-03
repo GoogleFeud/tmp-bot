@@ -1,7 +1,5 @@
 
 import { SlashContext } from "detritus-client/lib/slash";
-import { Player } from "../../../tmp/Player";
-import { successMsg } from "../../../utils";
 import Bitfield from "../../../utils/Bitfield";
 import { CustomSlashCommand } from "../../command";
 
@@ -16,17 +14,15 @@ export default class Leave extends CustomSlashCommand {
     }
 
     run(ctx: SlashContext) : void {
-        const game = ctx.slashCommandClient.games.get(ctx.channelId!)!;
-        const player = game.players.get(ctx.userId)!;
-        if (game.started) player.isDead = true;
+        if (ctx.game.started) ctx.player!.isDead = true;
         else {
-            game.players.delete(ctx.userId);
-            if (player.isHost) {
-                const players = game.players.toArray();
+            ctx.game.players.delete(ctx.userId);
+            if (ctx.player!.isHost && ctx.game.players.length) {
+                const players = ctx.game.players.toArray();
                 const player = players[players.length * Math.random() << 0];
                 player.isHost = true;
             }
         }
-        successMsg("Successfully left the game.", ctx);
+        ctx.slashCommandClient.commands.find(cmd => cmd.name === "game")!.run!(ctx, {});
     }
 }

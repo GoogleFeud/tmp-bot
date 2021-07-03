@@ -1,3 +1,4 @@
+import { Game } from "./Game";
 
 export type Finger = "A"|"B"|"C"|"D";
 
@@ -19,6 +20,10 @@ export class Player {
     minigameData: Record<string, unknown> = {}
     constructor(id: string) {
         this.id = id;
+    }
+
+    format(game: Game) : string {
+        return `<@${this.id}> ${this.isHost ? "👑":""}${this.isGhost ? "👻":""}${this.isDead ? "☠️":""}${game.started ? ` - ${this.money}$`:""}`;
     }
 
     toString() : string {

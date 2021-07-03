@@ -45,3 +45,7 @@ export function shuffleArray<T>(array: Array<T>) : Array<T> {
     }
     return array;
 }
+
+export function rngArr<T>(array: Array<T>) : T {
+    return array[array.length * Math.random() << 0];
+}

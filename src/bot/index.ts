@@ -10,6 +10,8 @@ export default async (): Promise<void> => {
             presences: { enabled: false },
             emojis: { enabled: false },
             messages: { enabled: false },
+            members: { enabled: false },
+            guilds: { enabled: false }
         },
         gateway: {
             loadAllMembers: false,

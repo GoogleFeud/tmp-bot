@@ -26,8 +26,7 @@ export default class Eval extends CustomSlashCommand<{code: string}> {
         if (ctx.userId !== process.env.OWNER_ID) return errorMsg("You cannot use this command!", ctx);
         let res: string;
         try {
-            res = await eval(args.code);
-            console.log(res);
+            res = JSON.stringify(await eval(args.code));
         } catch (err) {
             res = err.toString();
         }
