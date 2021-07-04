@@ -5,8 +5,10 @@ import { ShardClient } from "detritus-client";
 import { Message } from "detritus-client/lib/structures";
 import { buttonCollector, ButtonCollectorErrorCauses } from "../utils/ButtonCollector";
 import { TriviaQuestion } from "../utils/Trivia";
-import { errorMsg } from "../utils";
+import { createSlotMachine, errorMsg, rngArr } from "../utils";
 import { MessageComponentButtonStyles } from "detritus-client/lib/constants";
+import { Minigame } from "./Minigame";
+import { getMinigames } from "./minigames";
 
 const indexToLetter: Record<number, string> = {
     0: "A",
@@ -31,10 +33,14 @@ export class Game {
     phase = GamePhases.LOBBY
     currentQuestion?: TriviaQuestion
     questionCount = 0
+    minigames: Array<Minigame>
+    safePlayers?: Array<Player>
+    unsafePlayers?: Array<Player>
     constructor(channelId: string, client: ShardClient) {
         this.channelId = channelId;
         this.players = new BaseCollection();
         this.client = client;
+        this.minigames = getMinigames();
     }
 
     movePhase() : void {
@@ -44,11 +50,11 @@ export class Game {
                 this.trivia();
                 break;
             case GamePhases.MINIGAME:
+                this.clearBetweenPhases();
                 this.phase = GamePhases.TRIVIA;
                 this.trivia();
                 break;
             case GamePhases.TRIVIA:
-                this.clearBetweenPhases();
                 this.phase = GamePhases.MINIGAME;
                 this.minigame();
         }
@@ -131,8 +137,8 @@ export class Game {
             }
         }
 
-        const killingFloorPlayers = [];
-        const safePlayers = [];
+        const killingFloorPlayers: Array<Player> = [];
+        const safePlayers: Array<Player> = [];
         for (const [, player] of this.players) {
             if (player.isSafe) safePlayers.push(player);
             else killingFloorPlayers.push(player);
@@ -168,16 +174,39 @@ export class Game {
                 this.clearBetweenPhases();
                 this.trivia();
             }
-            else this.movePhase();
+            else {
+                this.unsafePlayers = killingFloorPlayers;
+                this.safePlayers = safePlayers;
+                this.movePhase();
+            }
         }, 5000);
     }
 
     async minigame() : Promise<void> {
-        this.send({content: "It's time for a minigame!"});
+        const minigame = rngArr(this.minigames.filter(minigame => minigame.canRoll(this)));
+        if (minigame.unique) this.minigames.splice(this.minigames.indexOf(minigame), 1);
+        let timer: number = 0;
+        let message: Message;
+        const interval = setInterval(async () => {
+            if (timer === 5) {
+                message.edit(createSlotMachine(minigame.emoji, minigame.emoji, minigame.emoji));
+                minigame.start(this);
+                clearInterval(interval);
+            } else {
+            const leftSide = rngArr(this.minigames).emoji;
+            const middleSide = rngArr(this.minigames).emoji;
+            const rightSide = rngArr(this.minigames).emoji;
+            if (!message) message = await this.send({content: createSlotMachine(leftSide, middleSide, rightSide)});
+            else message.edit({content: createSlotMachine(leftSide, middleSide, rightSide)});
+            timer++;
+            }
+        }, 1000);
     }
 
     clearBetweenPhases() : void {
         delete this.currentQuestion;
+        delete this.safePlayers;
+        delete this.unsafePlayers;
         for (const [, player] of this.players) {
             player.isSafe = false;
             player.minigameData = {};
@@ -187,4 +216,6 @@ export class Game {
     async send(content: RequestTypes.CreateMessage) : Promise<Message> {
         return this.client.rest.createMessage(this.channelId, content);
     }
+
+
 }

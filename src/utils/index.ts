@@ -61,3 +61,12 @@ export function shuffleArray<T>(array: Array<T>) : Array<T> {
 export function rngArr<T>(array: Array<T>) : T {
     return array[array.length * Math.random() << 0];
 }
+
+export function createSlotMachine(a: string, b: string, c: string) : string {
+    return `
+♦️ MINIGAME ♦️
+┍━━━━━━┑
+ │ ${a}    ${b}    ${c} │
+┕━━━━━━┛
+`
+}

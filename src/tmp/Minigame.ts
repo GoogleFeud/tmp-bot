@@ -1,6 +1,5 @@
 import { Game } from "./Game";
 
-
 export interface Minigame {
     name: string
     emoji: string
@@ -8,5 +7,4 @@ export interface Minigame {
     unique: boolean
     canRoll(game: Game) : boolean
     start(game: Game) : void
-    end(game: Game) : void
 }
