@@ -1,6 +1,6 @@
 import { ShardClient } from "detritus-client"
-import { InteractionCallbackTypes, InteractionTypes, MessageComponentButtonStyles, MessageComponentTypes } from "detritus-client/lib/constants"
-import { Interaction, InteractionDataComponent, Message, User } from "detritus-client/lib/structures"
+import { InteractionCallbackTypes, MessageComponentButtonStyles, MessageComponentTypes } from "detritus-client/lib/constants"
+import { Interaction, Message, User } from "detritus-client/lib/structures"
 import { RequestTypes } from "detritus-client-rest/lib/types";
 import { SlashContext } from "detritus-client/lib/slash";
 
@@ -12,7 +12,7 @@ export interface Button {
     emoji?: RequestTypes.RawEmojiPartial,
     url?: string,
     disabled?: boolean,
-    customId?: string
+    customId: string
 }
 
 export interface ButtonCollectorEntry {
@@ -31,6 +31,7 @@ export interface ButtonCollectorOptions {
     unique?: boolean, // Accept only one click per user
     onClick?: (user: ButtonCollectorEntry, interaction: Interaction, all: Array<ButtonCollectorEntry>, message?: Message) => boolean|null|void, // Do something when a user clicks
     onError?: (cause: ButtonCollectorErrorCauses, user: ButtonCollectorEntry, interaction: Interaction) => void,
+    onSend?: (thing: Interaction|Message) => void,
     timeout?: number,
     buttons: Array<Button>,
     content?: string,
@@ -38,92 +39,72 @@ export interface ButtonCollectorOptions {
     sendTo: SlashContext|string
 }
 
-export function buttonCollector(client: ShardClient, settings: ButtonCollectorOptions) : Promise<{
+interface ButtonCollectorResponse {
     entries: Array<ButtonCollectorEntry>,
     interaction?: Interaction,
     message?: Message
-}> {
+}
+
+export interface ButtonCollectorListener {
+    options: ButtonCollectorOptions,
+    message?: Message,
+    lastInteraction?: Interaction,
+    resolve: (data: ButtonCollectorResponse) => unknown,
+    entries: Array<ButtonCollectorEntry>,
+    timeout?: NodeJS.Timeout
+}
+
+export function buttonCollector(client: ShardClient, settings: ButtonCollectorOptions) : Promise<ButtonCollectorResponse> {
     return new Promise(async (resolve) => {
-        const {ids, components} = formatButtons((Math.floor(Math.random() * 100)).toString() + Date.now(), settings.buttons);
+        const components = formatButtons(settings.buttons);
 
         let message: Message|undefined;
-        let channelId: string|undefined;
+        let channelId: string;
         let lastInteraction: Interaction;
         if (typeof settings.sendTo === "string") {
             message = await client.rest.createMessage(settings.sendTo, {
                 content: settings.content,
                 embed: settings.embed,
                 components
-            });
+            })!
             channelId = settings.sendTo;
+            settings.onSend?.(message!);
         } else {
             await settings.sendTo.respond({
                 type: InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE,
                 data: { components, content: settings.content, embeds: settings.embed ? [settings.embed]:[] }
             });
             lastInteraction = settings.sendTo.interaction;
-            channelId = settings.sendTo.channelId;
+            channelId = settings.sendTo.channelId as string;
+            settings.onSend?.(lastInteraction);
         }
 
-        const entries: Array<ButtonCollectorEntry> = [];
-        let timeout: NodeJS.Timer;
+        delete settings.embed;
+        delete settings.content;
 
-        const cb = ({interaction}: {interaction: Interaction}) => {
-            if (
-                interaction.type === InteractionTypes.MESSAGE_COMPONENT &&
-                interaction.channelId === channelId &&
-                interaction.data && interaction.data instanceof InteractionDataComponent &&
-                ids.has(interaction.data.customId)
-            ) {
-                const onError = settings.onError || (() => interaction.respond(InteractionCallbackTypes.DEFERRED_UPDATE_MESSAGE));
-                const obj = {
-                    user: interaction.user,
-                    choice: ids.get(interaction.data.customId)!
-                }
-                if (settings.filter && !settings.filter(obj, interaction)) return onError(ButtonCollectorErrorCauses.FILTER, obj, interaction);
-                if (settings.unique && entries.some(e => e.user.id === interaction.userId)) return onError(ButtonCollectorErrorCauses.UNIQUE, obj, interaction);
-
-                if (settings.onClick && settings.onClick(obj, interaction, entries, message)) {
-                    client.removeListener("interactionCreate", cb);
-                    resolve({interaction, entries, message});
-                    clearTimeout(timeout);
-                }
-
-                entries.push(obj);
-
-                if (entries.length === settings.limit) {
-                    client.removeListener("interactionCreate", cb);
-                    resolve({interaction, entries, message});
-                    clearTimeout(timeout);
-                }
-
-                if (!interaction.responded) interaction.respond(InteractionCallbackTypes.DEFERRED_UPDATE_MESSAGE);
-                lastInteraction = interaction;
-            }
+        const listener: ButtonCollectorListener = {
+            options: settings,
+            message,
+            resolve,
+            entries: []
         }
-
-        client.on("interactionCreate", cb);
 
         if (settings.timeout) {
-            timeout = setTimeout(() => {
-                client.removeListener("interactionCreate", cb);
-                resolve({interaction: lastInteraction, entries, message});
+            listener.timeout = setTimeout(() => {
+                client.slashCommandClient!.buttonCollectors.delete(channelId);
+                resolve({interaction: lastInteraction, entries: listener.entries, message});
             }, settings.timeout);
         }
+
+        client.slashCommandClient!.buttonCollectors.set(channelId, listener);
     });
 }
 
-export function formatButtons(id: string, buttons: Array<Button>) : {
-    components: Array<RequestTypes.CreateChannelMessageComponent>,
-    ids: Map<string, Button>
-} {
+export function formatButtons(buttons: Array<Button>) : Array<RequestTypes.CreateChannelMessageComponent> {
     const res = [];
-    const listOfIds = new Map<string, Button>();
     let currentRow: {type: number, components: Array<RequestTypes.CreateChannelMessageComponent>} = { type: MessageComponentTypes.ACTION_ROW, components: [] };
     for (let i=1; i <= buttons.length; i++) {
         const btn = buttons[i - 1];
-        btn.customId = `${id}_${i}`;
-        listOfIds.set(btn.customId, btn);
         currentRow.components.push({ type: MessageComponentTypes.BUTTON, ...btn});
         if (i % 5 === 0) {
             res.push(currentRow);
@@ -131,5 +112,5 @@ export function formatButtons(id: string, buttons: Array<Button>) : {
         }
     }
     if (currentRow.components.length) res.push(currentRow);
-    return {components: res, ids: listOfIds};
+    return res;
 }

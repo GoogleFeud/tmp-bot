@@ -81,21 +81,25 @@ export class Game {
             buttons: [
                 {
                     label: "A",
+                    customId: "A",
                     style: MessageComponentButtonStyles.PRIMARY,
                     isCorrect: question.correct_answer === question.all_answers[0]
                 },
                 {
                     label: "B",
+                    customId: "B",
                     style: MessageComponentButtonStyles.PRIMARY,
                     isCorrect: question.correct_answer === question.all_answers[1]
                 },
                 {
                     label: "C",
+                    customId: "C",
                     style: MessageComponentButtonStyles.PRIMARY,
                     isCorrect: question.correct_answer === question.all_answers[2]
                 },
                 {
                     label: "D",
+                    customId: "D",
                     style: MessageComponentButtonStyles.PRIMARY,
                     isCorrect: question.correct_answer === question.all_answers[3]
                 }
@@ -194,7 +198,7 @@ export class Game {
                 clearInterval(interval);
             } else {
             const leftSide = rngArr(this.minigames).emoji;
-            const middleSide = rngArr(this.minigames).emoji;
+            const middleSide = rngArr(this.minigames.filter(m => m.emoji !== leftSide)).emoji;
             const rightSide = rngArr(this.minigames).emoji;
             if (!message) message = await this.send({content: createSlotMachine(leftSide, middleSide, rightSide)});
             else message.edit({content: createSlotMachine(leftSide, middleSide, rightSide)});

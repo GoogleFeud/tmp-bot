@@ -2,6 +2,15 @@ import { InteractionCallbackTypes } from "detritus-client/lib/constants";
 import { SlashContext } from "detritus-client/lib/slash";
 import { RequestTypes } from "detritus-client-rest/lib/types";
 import { Interaction } from "detritus-client/lib/structures";
+import fs from "fs";
+import { ClusterClient, ShardClient } from "detritus-client";
+
+export function addEvents(client: ClusterClient | ShardClient, dir: string) : void {
+    for (const file of fs.readdirSync(dir).filter(f => f.endsWith(".js"))) {
+        const fn = require(`${dir}/${file}`).default;
+        client.on(file.slice(0, -3), fn);
+    }
+}
 
 export function errorMsg(content: string, ctx: SlashContext|Interaction, quiet = true) : false {
     ctx.respond({
@@ -69,4 +78,8 @@ export function createSlotMachine(a: string, b: string, c: string) : string {
  │ ${a}    ${b}    ${c} │
 ┕━━━━━━┛
 `
+}
+
+export function wait(secs: number) : Promise<void> {
+    return new Promise((res) => setTimeout(res, secs * 1000));
 }
