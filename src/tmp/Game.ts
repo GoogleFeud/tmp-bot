@@ -9,8 +9,9 @@ import { createSlotMachine, errorMsg, rngArr } from "../utils";
 import { MessageComponentButtonStyles } from "detritus-client/lib/constants";
 import { Minigame } from "./Minigame";
 import { getMinigames } from "./minigames";
+import { QuestionEmbed } from "../utils/embeds";
 
-const indexToLetter: Record<number, string> = {
+export const indexToLetter: Record<number, string> = {
     0: "A",
     1: "B",
     2: "C",
@@ -64,19 +65,11 @@ export class Game {
         const question = await this.client.slashCommandClient!.trivia.get()!;
         this.currentQuestion = question;
         const playersWhoCanAnswerCount = this.players.filter(p => !p.isDead).length;
-        const makeEmbed = (timer = true, answered = 0) => {
-            return {
-                title: `❓ Question #${this.questionCount}`,
-                description: `${timer ? `🕜   ${process.env.COUNTDOWN_EMOJI}`:""}\n**${question.question}**\n\n${question.all_answers.map((answer, index) => `${indexToLetter[index]}) ${answer}`).join("\n")}\n\n**${answered}/${playersWhoCanAnswerCount} answered**`,
-                footer: { text: "You have 30 seconds to answer!" },
-                color: 0xba008f
-            }
-        }
         let answeredAmount = 0;
         let timeout;
         const answers = await buttonCollector(this.client, {
             sendTo: this.channelId,
-            embed: makeEmbed(),
+            embed: QuestionEmbed.change(this, true, answeredAmount, playersWhoCanAnswerCount),
             buttons: [
                 {
                     label: "A",
@@ -125,13 +118,13 @@ export class Game {
                 answeredAmount++;
                 timeout = setTimeout(async () => {
                     if (answeredAmount !== answeredAmount) return;
-                    msg!.edit({embed: makeEmbed(true, answeredAmount)});
+                    msg!.edit({embed: QuestionEmbed.change(this, true, answeredAmount, playersWhoCanAnswerCount)});
                 }, 800);
             }
         });
         clearTimeout(timeout);
         if (!this.started) return;
-        await answers.message!.edit({embed: makeEmbed(false, answeredAmount), components: []});
+        await answers.message!.edit({embed: QuestionEmbed.change(this, true, answeredAmount, playersWhoCanAnswerCount), components: []});
 
         for (const entry of answers.entries) {
             if (entry.choice.isCorrect) {

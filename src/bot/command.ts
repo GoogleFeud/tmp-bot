@@ -1,5 +1,4 @@
 
-import { InteractionCallbackTypes } from "detritus-client/lib/constants";
 import { SlashCommand, SlashCommandOptions, SlashContext } from "detritus-client/lib/slash";
 import { Game } from "../tmp/Game";
 import { customMsg, errorMsg } from "../utils";
