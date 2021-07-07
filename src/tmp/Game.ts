@@ -29,7 +29,6 @@ export class Game {
     channelId: string
     players: BaseCollection<string, Player>
     started = false
-    paused = false
     phase = GamePhases.LOBBY
     currentQuestion?: TriviaQuestion
     questionCount = 0
@@ -131,6 +130,7 @@ export class Game {
             }
         });
         clearTimeout(timeout);
+        if (!this.started) return;
         await answers.message!.edit({embed: makeEmbed(false, answeredAmount), components: []});
 
         for (const entry of answers.entries) {
@@ -187,6 +187,7 @@ export class Game {
     }
 
     async minigame() : Promise<void> {
+        if (!this.started) return;
         const minigame = rngArr(this.minigames.filter(minigame => minigame.canRoll(this)));
         if (minigame.unique) this.minigames.splice(this.minigames.indexOf(minigame), 1);
         let timer: number = 0;
@@ -215,6 +216,17 @@ export class Game {
             player.isSafe = false;
             player.minigameData = {};
         }
+    }
+
+    clear() {
+        delete this.currentQuestion;
+        delete this.safePlayers;
+        delete this.unsafePlayers;
+        this.started = false;
+        this.questionCount = 0;
+        this.minigames = getMinigames();
+        this.phase = GamePhases.LOBBY;
+        this.players.clear();
     }
 
     async send(content: RequestTypes.CreateMessage) : Promise<Message> {

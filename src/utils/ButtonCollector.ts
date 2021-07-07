@@ -60,7 +60,7 @@ export function buttonCollector(client: ShardClient, settings: ButtonCollectorOp
 
         let message: Message|undefined;
         let channelId: string;
-        let lastInteraction: Interaction;
+        let lastInteraction: Interaction|undefined = undefined;
         if (typeof settings.sendTo === "string") {
             message = await client.rest.createMessage(settings.sendTo, {
                 content: settings.content,
@@ -81,9 +81,11 @@ export function buttonCollector(client: ShardClient, settings: ButtonCollectorOp
 
         delete settings.embed;
         delete settings.content;
+        delete settings.onSend;
 
         const listener: ButtonCollectorListener = {
             options: settings,
+            lastInteraction,
             message,
             resolve,
             entries: []
@@ -98,6 +100,16 @@ export function buttonCollector(client: ShardClient, settings: ButtonCollectorOp
 
         client.slashCommandClient!.buttonCollectors.set(channelId, listener);
     });
+}
+
+export function cancelButtonCollector(client: ShardClient, channelId: string) : void {
+    const listener = client.slashCommandClient!.buttonCollectors.get(channelId);
+    if (!listener) return;
+    if (listener.timeout) clearTimeout(listener.timeout);
+    if (listener.message) listener.message.delete();
+    if (listener.lastInteraction) listener.lastInteraction.deleteResponse();
+    client.slashCommandClient?.buttonCollectors.delete(channelId);
+    listener.resolve({entries: []});
 }
 
 export function formatButtons(buttons: Array<Button>) : Array<RequestTypes.CreateChannelMessageComponent> {

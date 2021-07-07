@@ -1,6 +1,6 @@
-import { InteractionCallbackTypes } from "detritus-client/lib/constants";
+
 import { SlashContext } from "detritus-client/lib/slash";
-import { errorMsg, successMsg } from "../../../utils";
+import { errorMsg } from "../../../utils";
 import Bitfield from "../../../utils/Bitfield";
 import { CustomSlashCommand } from "../../command";
 
