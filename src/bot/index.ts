@@ -27,6 +27,7 @@ export default async (): Promise<void> => {
     client.games = new Map();
     client.trivia = new Trivia();
     client.buttonCollectors = new Map();
+    client.dropdownCollectors = new Map();
     await client.trivia.getSession();
 
     await client.addMultipleIn("bot/commands", {isAbsolute: false, subdirectories: true});

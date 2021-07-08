@@ -3,7 +3,7 @@ import { optionToFinger, Player } from "./Player";
 import { RequestTypes } from "detritus-client-rest/lib/types";
 import { ShardClient } from "detritus-client";
 import { Message } from "detritus-client/lib/structures";
-import { buttonCollector, ButtonCollectorErrorCauses } from "../utils/ButtonCollector";
+import { buttonCollector, CollectorErrorCauses } from "../utils/ButtonCollector";
 import { TriviaQuestion } from "../utils/Trivia";
 import { createSlotMachine, errorMsg, rngArr, wait } from "../utils";
 import { MessageComponentButtonStyles } from "detritus-client/lib/constants";
@@ -105,11 +105,11 @@ export class Game {
             },
             onError: (cause, user, interaction) => {
                  switch (cause) {
-                    case ButtonCollectorErrorCauses.FILTER:
+                    case CollectorErrorCauses.FILTER:
                         if (this.players.get(user.user.id)?.lostFinger === user.choice.label) errorMsg(`You cannot select this answer because you cut off your ${optionToFinger[user.choice.label]} finger`, interaction)
                         else errorMsg("You must be in the game and be alive in order to answer", interaction);
                         break;
-                    case ButtonCollectorErrorCauses.UNIQUE:
+                    case CollectorErrorCauses.UNIQUE:
                         errorMsg("You have already answered", interaction);
                         break;
                  }
@@ -123,7 +123,7 @@ export class Game {
             }
         });
         clearTimeout(timeout);
-        if (!this.started) return;
+        if (answers.cancelled) return;
         await answers.message!.edit({embed: QuestionEmbed.change(this, false, answeredAmount, playersWhoCanAnswerCount), components: []});
 
         for (const entry of answers.entries) {
@@ -137,6 +137,7 @@ export class Game {
         const killingFloorPlayers: Array<Player> = [];
         const safePlayers: Array<Player> = [];
         for (const [, player] of this.players) {
+            if (player.isDead || player.isGhost) continue;
             if (player.isSafe) safePlayers.push(player);
             else killingFloorPlayers.push(player);
         }
@@ -221,6 +222,11 @@ export class Game {
         this.minigames = getMinigames();
         this.phase = GamePhases.LOBBY;
         this.players.clear();
+    }
+
+    isAlive(playerId: string) : boolean {
+        const player = this.players.get(playerId);
+        return (player || false) && !player.isDead && !player.isGhost;
     }
 
     async send(content: RequestTypes.CreateMessage) : Promise<Message> {

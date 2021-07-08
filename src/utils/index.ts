@@ -83,3 +83,7 @@ export function createSlotMachine(a: string, b: string, c: string) : string {
 export function wait(secs: number) : Promise<void> {
     return new Promise((res) => setTimeout(res, secs * 1000));
 }
+
+export function fiftyfifty() : boolean {
+    return Math.random() > 0.5;
+}

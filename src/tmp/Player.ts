@@ -11,6 +11,7 @@ export const optionToFinger = {
 
 export class Player {
     id: string
+    username: string
     lostFinger?: Finger
     isGhost = false
     isDead = false
@@ -18,8 +19,9 @@ export class Player {
     isSafe = false
     money = 0
     minigameData: Record<string, unknown> = {}
-    constructor(id: string) {
+    constructor(id: string, username: string) {
         this.id = id;
+        this.username = username;
     }
 
     format(game: Game) : string {

@@ -20,17 +20,17 @@ export interface ButtonCollectorEntry {
     choice: Button
 }
 
-export const enum ButtonCollectorErrorCauses {
+export const enum CollectorErrorCauses {
     FILTER,
     UNIQUE
 }
 
 export interface ButtonCollectorOptions {
     limit?: number, // How many clicks to wait for
-    filter?: (user: ButtonCollectorEntry, interaction: Interaction) => boolean|null|void, // Filter out clicks
+    filter?: (user: ButtonCollectorEntry) => boolean|null|void, // Filter out clicks
     unique?: boolean, // Accept only one click per user
     onClick?: (user: ButtonCollectorEntry, interaction: Interaction, all: Array<ButtonCollectorEntry>, message?: Message) => boolean|null|void, // Do something when a user clicks
-    onError?: (cause: ButtonCollectorErrorCauses, user: ButtonCollectorEntry, interaction: Interaction) => void,
+    onError?: (cause: CollectorErrorCauses, user: ButtonCollectorEntry, interaction: Interaction) => void,
     onSend?: (thing: Interaction|Message) => void,
     timeout?: number,
     buttons: Array<Button>,
@@ -42,7 +42,8 @@ export interface ButtonCollectorOptions {
 interface ButtonCollectorResponse {
     entries: Array<ButtonCollectorEntry>,
     interaction?: Interaction,
-    message?: Message
+    message?: Message,
+    cancelled?: boolean
 }
 
 export interface ButtonCollectorListener {
@@ -109,7 +110,7 @@ export function cancelButtonCollector(client: ShardClient, channelId: string) : 
     if (listener.message) listener.message.delete();
     if (listener.lastInteraction) listener.lastInteraction.deleteResponse();
     client.slashCommandClient?.buttonCollectors.delete(channelId);
-    listener.resolve({entries: []});
+    listener.resolve({entries: [], cancelled: true});
 }
 
 export function formatButtons(buttons: Array<Button>) : Array<RequestTypes.CreateChannelMessageComponent> {

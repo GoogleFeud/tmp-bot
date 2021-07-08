@@ -1,7 +1,7 @@
 
 import { MessageComponentButtonStyles } from "detritus-client/lib/constants";
 import { errorMsg } from "../../utils";
-import { buttonCollector, ButtonCollectorErrorCauses } from "../../utils/ButtonCollector";
+import { buttonCollector, CollectorErrorCauses } from "../../utils/ButtonCollector";
 import { MinigameEmbed } from "../../utils/embeds";
 import { Minigame } from "../Minigame";
 import { Finger, optionToFinger } from "../Player";
@@ -47,10 +47,10 @@ export default {
             filter: ({user}) => game.unsafePlayers!.some(p => p.id === user.id),
             onError: (cause, user, interaction) => {
                  switch (cause) {
-                    case ButtonCollectorErrorCauses.FILTER:
+                    case CollectorErrorCauses.FILTER:
                         errorMsg("You must be in the killing floor in order to do this!", interaction);
                         break;
-                    case ButtonCollectorErrorCauses.UNIQUE:
+                    case CollectorErrorCauses.UNIQUE:
                         const player = game.players.get(user.user.id)!;
                         errorMsg(`You already cut off your ${optionToFinger[player!.lostFinger!]}`, interaction);
                         break;
@@ -65,6 +65,7 @@ export default {
             }
         });
         clearTimeout(timeout);
+        if (responses.cancelled) return;
         responses.message!.edit({embed: MinigameEmbed.change(minigame, game, answeredAmount), components: []})
         for (const response of responses.entries) {
              const player = game.players.get(response.user.id)!;
