@@ -6,5 +6,5 @@ export interface Minigame {
     description: string
     unique: boolean
     canRoll(game: Game) : boolean
-    start(game: Game) : void
+    start(game: Game, minigame: Minigame) : void
 }

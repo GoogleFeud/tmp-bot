@@ -11,6 +11,7 @@ export default class Game extends CustomSlashCommand {
     }
 
     run(ctx: SlashContext, params: {title: string}) : void {
+        //ctx.client.rest.createMessage(ctx.channelId, {content: ""})
         const game = ctx.game;
         const fields = [
             {

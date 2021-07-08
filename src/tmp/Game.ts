@@ -5,7 +5,7 @@ import { ShardClient } from "detritus-client";
 import { Message } from "detritus-client/lib/structures";
 import { buttonCollector, ButtonCollectorErrorCauses } from "../utils/ButtonCollector";
 import { TriviaQuestion } from "../utils/Trivia";
-import { createSlotMachine, errorMsg, rngArr } from "../utils";
+import { createSlotMachine, errorMsg, rngArr, wait } from "../utils";
 import { MessageComponentButtonStyles } from "detritus-client/lib/constants";
 import { Minigame } from "./Minigame";
 import { getMinigames } from "./minigames";
@@ -124,7 +124,7 @@ export class Game {
         });
         clearTimeout(timeout);
         if (!this.started) return;
-        await answers.message!.edit({embed: QuestionEmbed.change(this, true, answeredAmount, playersWhoCanAnswerCount), components: []});
+        await answers.message!.edit({embed: QuestionEmbed.change(this, false, answeredAmount, playersWhoCanAnswerCount), components: []});
 
         for (const entry of answers.entries) {
             if (entry.choice.isCorrect) {
@@ -166,17 +166,16 @@ export class Game {
             }
         });
 
-        setTimeout(() => {
-            if (killingFloorPlayers.length === 0) {
-                this.clearBetweenPhases();
-                this.trivia();
-            }
-            else {
-                this.unsafePlayers = killingFloorPlayers;
-                this.safePlayers = safePlayers;
-                this.movePhase();
-            }
-        }, 5000);
+        await wait(5);
+        if (killingFloorPlayers.length === 0) {
+            this.clearBetweenPhases();
+            this.trivia();
+        }
+        else {
+            this.unsafePlayers = killingFloorPlayers;
+            this.safePlayers = safePlayers;
+            this.movePhase();
+        }
     }
 
     async minigame() : Promise<void> {
@@ -188,8 +187,10 @@ export class Game {
         const interval = setInterval(async () => {
             if (timer === 5) {
                 message.edit(createSlotMachine(minigame.emoji, minigame.emoji, minigame.emoji));
-                minigame.start(this);
                 clearInterval(interval);
+                await minigame.start(this, minigame);
+                await wait(2);
+                this.movePhase();
             } else {
             const leftSide = rngArr(this.minigames).emoji;
             const middleSide = rngArr(this.minigames.filter(m => m.emoji !== leftSide)).emoji;
