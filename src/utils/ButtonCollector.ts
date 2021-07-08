@@ -36,11 +36,13 @@ export interface ButtonCollectorOptions {
     buttons: Array<Button>,
     content?: string,
     embed?: RequestTypes.CreateChannelMessageEmbed,
+    perRow?: number,
     sendTo: SlashContext|string
 }
 
 interface ButtonCollectorResponse {
     entries: Array<ButtonCollectorEntry>,
+    map?: Map<string, Button>,
     interaction?: Interaction,
     message?: Message,
     cancelled?: boolean
@@ -48,6 +50,7 @@ interface ButtonCollectorResponse {
 
 export interface ButtonCollectorListener {
     options: ButtonCollectorOptions,
+    map?: Map<string, Button>,
     message?: Message,
     lastInteraction?: Interaction,
     resolve: (data: ButtonCollectorResponse) => unknown,
@@ -57,7 +60,7 @@ export interface ButtonCollectorListener {
 
 export function buttonCollector(client: ShardClient, settings: ButtonCollectorOptions) : Promise<ButtonCollectorResponse> {
     return new Promise(async (resolve) => {
-        const components = formatButtons(settings.buttons);
+        const components = formatButtons(settings.buttons, settings.perRow);
 
         let message: Message|undefined;
         let channelId: string;
@@ -92,10 +95,12 @@ export function buttonCollector(client: ShardClient, settings: ButtonCollectorOp
             entries: []
         }
 
+        if (settings.unique) listener.map = new Map();
+
         if (settings.timeout) {
             listener.timeout = setTimeout(() => {
                 client.slashCommandClient!.buttonCollectors.delete(channelId);
-                resolve({interaction: lastInteraction, entries: listener.entries, message});
+                resolve({interaction: lastInteraction, entries: listener.entries, message, map: listener.map});
             }, settings.timeout);
         }
 
@@ -113,13 +118,13 @@ export function cancelButtonCollector(client: ShardClient, channelId: string) : 
     listener.resolve({entries: [], cancelled: true});
 }
 
-export function formatButtons(buttons: Array<Button>) : Array<RequestTypes.CreateChannelMessageComponent> {
+export function formatButtons(buttons: Array<Button>, perRow = 5) : Array<RequestTypes.CreateChannelMessageComponent> {
     const res = [];
     let currentRow: {type: number, components: Array<RequestTypes.CreateChannelMessageComponent>} = { type: MessageComponentTypes.ACTION_ROW, components: [] };
     for (let i=1; i <= buttons.length; i++) {
         const btn = buttons[i - 1];
         currentRow.components.push({ type: MessageComponentTypes.BUTTON, ...btn});
-        if (i % 5 === 0) {
+        if (i % perRow === 0) {
             res.push(currentRow);
             currentRow = { type: MessageComponentTypes.ACTION_ROW, components: [] };
         }

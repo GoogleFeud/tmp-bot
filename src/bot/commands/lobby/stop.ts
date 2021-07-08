@@ -19,6 +19,7 @@ export default class Stop extends CustomSlashCommand {
         ctx.game.clear();
         cancelButtonCollector(ctx.client, ctx.channelId!);
         cancelDropdownCollector(ctx.client, ctx.channelId!);
+        ctx.slashCommandClient!.games.delete(ctx.channelId!);
         successMsg("Game stopped!", ctx, false);
     }
 

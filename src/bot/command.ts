@@ -36,9 +36,10 @@ export class CustomSlashCommand<T = unknown> extends SlashCommand<T> {
             if (this.customPerms.has(Bitfield.CANT_BE_DEAD) && player.isDead) return errorMsg("Only alive players can use this command.", ctx);
             if (this.customPerms.has(Bitfield.MUST_BE_GHOST) && !player.isGhost) return errorMsg("Only ghosts can use this command.", ctx);
             if (this.customPerms.has(Bitfield.CANT_BE_GHOST) && player.isGhost) return errorMsg("Only alive players can use this command.", ctx);
-            if (this.customPerms.has(Bitfield.MUST_BE_HOST) && (!player.isHost || !ctx.member!.canManageMessages || !ctx.member!.canKickMembers)) return errorMsg("Only hosts can use this command.", ctx);
+            if (this.customPerms.has(Bitfield.MUST_BE_HOST) && !player.isHost) return errorMsg("Only hosts can use this command.", ctx);
         } else {
-            if (this.customPerms.has(Bitfield.MUST_BE_IN_GAME)) return errorMsg("You must be in th egame in order to use this command.", ctx);
+            if (this.customPerms.has(Bitfield.MUST_BE_IN_GAME)) return errorMsg("You must be in the game in order to use this command.", ctx);
+            if (this.customPerms.has(Bitfield.MUST_BE_HOST) && (!ctx.member!.canManageMessages || !ctx.member!.canKickMembers)) return errorMsg("Only hosts can use this command.", ctx);
         } 
     }
         return true;

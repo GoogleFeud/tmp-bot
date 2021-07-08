@@ -69,7 +69,7 @@ export class Game {
         let timeout;
         const answers = await buttonCollector(this.client, {
             sendTo: this.channelId,
-            embed: QuestionEmbed.change(this, true, answeredAmount, playersWhoCanAnswerCount),
+            embed: QuestionEmbed.change(this, true),
             buttons: [
                 {
                     label: "A",
@@ -118,13 +118,13 @@ export class Game {
                 answeredAmount++;
                 timeout = setTimeout(async () => {
                     if (answeredAmount !== answeredAmount) return;
-                    msg!.edit({embed: QuestionEmbed.change(this, true, answeredAmount, playersWhoCanAnswerCount)});
+                    this.send({content: `**${answeredAmount}/${playersWhoCanAnswerCount} answered**`})
                 }, 800);
             }
         });
         clearTimeout(timeout);
         if (answers.cancelled) return;
-        await answers.message!.edit({embed: QuestionEmbed.change(this, false, answeredAmount, playersWhoCanAnswerCount), components: []});
+        await answers.message!.edit({embed: QuestionEmbed.change(this, false), components: []});
 
         for (const entry of answers.entries) {
             if (entry.choice.isCorrect) {
@@ -137,7 +137,8 @@ export class Game {
         const killingFloorPlayers: Array<Player> = [];
         const safePlayers: Array<Player> = [];
         for (const [, player] of this.players) {
-            if (player.isDead || player.isGhost) continue;
+            // Ghosts are counted as safe players. Maybe change that?
+            if (player.isDead) continue;
             if (player.isSafe) safePlayers.push(player);
             else killingFloorPlayers.push(player);
         }
@@ -181,7 +182,7 @@ export class Game {
 
     async minigame() : Promise<void> {
         if (!this.started) return;
-        const minigame = rngArr(this.minigames.filter(minigame => minigame.canRoll(this)));
+        const minigame = this.minigames.find(m => m.name === "Chalices")!; //rngArr(this.minigames.filter(minigame => minigame.canRoll(this)));
         if (minigame.unique) this.minigames.splice(this.minigames.indexOf(minigame), 1);
         let timer: number = 0;
         let message: Message;
@@ -189,6 +190,7 @@ export class Game {
             if (timer === 5) {
                 message.edit(createSlotMachine(minigame.emoji, minigame.emoji, minigame.emoji));
                 clearInterval(interval);
+                if (!this.started) return;
                 await minigame.start(this, minigame);
                 await wait(2);
                 this.movePhase();

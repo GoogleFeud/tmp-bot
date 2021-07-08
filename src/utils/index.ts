@@ -87,3 +87,7 @@ export function wait(secs: number) : Promise<void> {
 export function fiftyfifty() : boolean {
     return Math.random() > 0.5;
 }
+
+export function rngBtw(max = 1) : number {
+    return max * Math.random() << 0;
+}

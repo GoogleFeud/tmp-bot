@@ -20,19 +20,20 @@ export default ({interaction}: GatewayClientEvents.InteractionCreate) => {
             choice: listener.options.buttons.find(btn => btn.customId === data.customId)!
         }
         if (listener.options.filter && !listener.options.filter(obj)) return onError(CollectorErrorCauses.FILTER, obj, interaction);
-        if (listener.options.unique && listener.entries.some(e => e.user.id === interaction.userId)) return onError(CollectorErrorCauses.UNIQUE, obj, interaction);
+        if (listener.options.unique && listener.map!.has(interaction.userId)) return onError(CollectorErrorCauses.UNIQUE, obj, interaction);
 
         if (listener.options.onClick && listener.options.onClick(obj, interaction, listener.entries, listener.message)) {
             interaction.client.slashCommandClient!.buttonCollectors.delete(interaction.channelId);
-            listener.resolve({interaction, entries: listener.entries, message: listener.message});
+            listener.resolve({interaction, entries: listener.entries, message: listener.message, map: listener.map});
             if (listener.timeout) clearTimeout(listener.timeout);
         }
 
+        if (listener.options.unique) listener.map!.set(interaction.userId, obj.choice);
         listener.entries.push(obj);
 
         if (listener.entries.length === listener.options.limit) {
             interaction.client.slashCommandClient!.buttonCollectors.delete(interaction.channelId);
-            listener.resolve({interaction, entries: listener.entries, message: listener.message});
+            listener.resolve({interaction, entries: listener.entries, message: listener.message, map: listener.map});
             if (listener.timeout) clearTimeout(listener.timeout);
         }
 

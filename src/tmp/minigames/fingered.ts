@@ -1,6 +1,6 @@
 
 import { MessageComponentButtonStyles } from "detritus-client/lib/constants";
-import { errorMsg } from "../../utils";
+import { errorMsg, rngArr } from "../../utils";
 import { buttonCollector, CollectorErrorCauses } from "../../utils/ButtonCollector";
 import { MinigameEmbed } from "../../utils/embeds";
 import { Minigame } from "../Minigame";
@@ -60,16 +60,16 @@ export default {
                 answeredAmount++;
                 timeout = setTimeout(async () => {
                     if (answeredAmount !== answeredAmount) return;
-                    msg!.edit({embed: MinigameEmbed.change(minigame, game, answeredAmount, 60)});
-                }, 800);
+                    game.send({content: `**${answeredAmount}/${game.unsafePlayers!.length}** submitted`});
+                }, 1200);
             }
         });
         clearTimeout(timeout);
         if (responses.cancelled) return;
-        responses.message!.edit({embed: MinigameEmbed.change(minigame, game, answeredAmount), components: []})
-        for (const response of responses.entries) {
-             const player = game.players.get(response.user.id)!;
-             player.lostFinger = response.choice.customId as Finger;
+        responses.message!.edit({embed: MinigameEmbed.change(minigame, game, answeredAmount), components: []});
+        for (const player of game.unsafePlayers!) {
+            if (responses.map!.has(player.id)) player.lostFinger = responses.map!.get(player.id)!.customId as Finger;
+            else player.lostFinger = rngArr(["A", "B", "C", "D"]);
         }
     },
 } as Minigame;

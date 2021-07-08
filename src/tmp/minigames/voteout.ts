@@ -39,8 +39,8 @@ export default {
                 answeredAmount++;
                 timeout = setTimeout(async () => {
                     if (answeredAmount !== answeredAmount) return;
-                    msg!.edit({embed: MinigameEmbed.change(minigame, game, answeredAmount, 60, totalPlayersInGame)});
-                }, 800);
+                    game.send({content: `**${answeredAmount}/${game.unsafePlayers!.length}** submitted`});
+                }, 1200);
             }
         });
         clearTimeout(timeout);
