@@ -80,8 +80,8 @@ export function createSlotMachine(a: string, b: string, c: string) : string {
 `
 }
 
-export function wait(secs: number) : Promise<void> {
-    return new Promise((res) => setTimeout(res, secs * 1000));
+export function wait(millisecs: number) : Promise<void> {
+    return new Promise((res) => setTimeout(res, millisecs));
 }
 
 export function fiftyfifty() : boolean {

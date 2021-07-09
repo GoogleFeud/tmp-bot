@@ -1,6 +1,7 @@
 
 import { errorMsg, fiftyfifty, wait } from "../../utils";
 import { CollectorErrorCauses } from "../../utils/ButtonCollector";
+import { CounterCollector } from "../../utils/CounterCollector";
 import { dropdownCollector } from "../../utils/DropdownCollector";
 import { MinigameEmbed } from "../../utils/embeds";
 import { Minigame } from "../Minigame";
@@ -13,9 +14,10 @@ export default {
     unique: false,
     canRoll: (game) => (game.safePlayers!.length + game.unsafePlayers!.length) > 2 && game.unsafePlayers!.length > 1,
     start: async (game, minigame) => {
-        let answeredAmount = 0;
         const totalPlayersInGame = game.safePlayers!.length + game.unsafePlayers!.length;
-        let timeout;
+        
+        const counter = new CounterCollector(game, totalPlayersInGame);
+
         const res = await dropdownCollector(game.client, {
             sendTo: game.channelId,
             options: game.unsafePlayers!.map(p => ({label: p.username, value: p.id})),
@@ -23,7 +25,7 @@ export default {
             limit: totalPlayersInGame,
             timeout: 60_000,
             unique: true,
-            embed: MinigameEmbed.change(minigame, game, answeredAmount, 60, totalPlayersInGame),
+            embed: MinigameEmbed.change(minigame, game, 60),
             filter: ({user}) => game.isAlive(user.id),
             onError: (cause, user, interaction) => {
                  switch (cause) {
@@ -35,17 +37,11 @@ export default {
                         break;
                  }
             },
-            onSelect: (entry, interaction, all, msg) => {
-                answeredAmount++;
-                timeout = setTimeout(async () => {
-                    if (answeredAmount !== answeredAmount) return;
-                    game.send({content: `**${answeredAmount}/${game.unsafePlayers!.length}** submitted`});
-                }, 1200);
-            }
+            onSelect: () => counter.inc()
         });
-        clearTimeout(timeout);
+        counter.stop();
         if (res.cancelled) return;
-        res.message!.edit({embed: MinigameEmbed.change(minigame, game, answeredAmount, undefined, totalPlayersInGame), components: []});
+        res.message!.edit({embed: MinigameEmbed.change(minigame, game, undefined), components: []});
         const votes: Record<string, number> = {};
         for (const vote of res.entries) {
             if (!votes[vote.options[0]]) votes[vote.options[0]] = 1;

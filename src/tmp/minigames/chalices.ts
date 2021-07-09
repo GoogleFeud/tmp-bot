@@ -2,6 +2,7 @@
 import { MessageComponentButtonStyles } from "detritus-client/lib/constants";
 import { errorMsg, rngBtw } from "../../utils";
 import { buttonCollector, CollectorErrorCauses } from "../../utils/ButtonCollector";
+import { CounterCollector } from "../../utils/CounterCollector";
 import { EditableEmbed } from "../../utils/EditableEmbed";
 import { MinigameEmbed } from "../../utils/embeds";
 import { Minigame } from "../Minigame";
@@ -16,11 +17,12 @@ export default {
     start: async (game, minigame) => {
         const chalices = Array.from({length: Math.max(4, game.unsafePlayers!.length)}, (_, ind: number) => ({customId: ind.toString(), label: "🏆", style: MessageComponentButtonStyles.PRIMARY}));
         const poisonedChalices = new Set();
-        let answeredAmount = 0;
-        let timeout;
+        
+        const counter = new CounterCollector(game, game.safePlayers!.length);
+
         const poisonPellets = await buttonCollector(game.client, {
             sendTo: game.channelId,
-            embed: MinigameEmbed.change(minigame, game, answeredAmount, 60),
+            embed: MinigameEmbed.change(minigame, game, 60),
             buttons: chalices,
             unique: true,
             limit: game.safePlayers!.length,
@@ -36,24 +38,18 @@ export default {
                         break;
                  }
             },
-            onClick: (entry, interaction, all, msg) => {
-                answeredAmount++;
-                timeout = setTimeout(async () => {
-                    if (answeredAmount !== answeredAmount) return;
-                    msg!.edit({embed: MinigameEmbed.change(minigame, game, answeredAmount, 60)});
-                }, 1200);
-            }
+            onClick: () => counter.inc()
         });
-        clearTimeout(timeout);
+        counter.stop();
         if (poisonPellets.cancelled) return;
-        poisonPellets.message!.edit({embed: MinigameEmbed.change(minigame, game, answeredAmount), components: []});
+        poisonPellets.message!.edit({embed: MinigameEmbed.change(minigame, game), components: []});
         for (const player of game.safePlayers!) {
             const choice = poisonPellets.map!.get(player.id);
             if (choice) poisonedChalices.add(+choice.customId);
             else poisonedChalices.add(rngBtw(chalices.length));
         }
 
-        answeredAmount = 0;
+        counter.reset(game.unsafePlayers!.length);
 
         const EditableWithCount = new EditableEmbed<(showTimer?: number) => void>({
             title: "🍹 Time to drink",
@@ -81,15 +77,9 @@ export default {
                         break;
                  }
             },
-            onClick: (entry, interaction, all, msg) => {
-                answeredAmount++;
-                timeout = setTimeout(async () => {
-                    if (answeredAmount !== answeredAmount) return;
-                    game.send({content: `**${answeredAmount}/${game.unsafePlayers!.length}** submitted`});
-                }, 1200);
-            }
+            onClick: () => counter.inc()
         })
-        clearTimeout(timeout);
+        counter.stop();
         if (poisonPellets.cancelled) return;
         userChoices.message!.edit({embed: EditableWithCount.change(), components: []});
 

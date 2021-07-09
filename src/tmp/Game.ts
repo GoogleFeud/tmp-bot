@@ -10,6 +10,7 @@ import { MessageComponentButtonStyles } from "detritus-client/lib/constants";
 import { Minigame } from "./Minigame";
 import { getMinigames } from "./minigames";
 import { QuestionEmbed } from "../utils/embeds";
+import { CounterCollector } from "../utils/CounterCollector";
 
 export const indexToLetter: Record<number, string> = {
     0: "A",
@@ -65,8 +66,9 @@ export class Game {
         const question = await this.client.slashCommandClient!.trivia.get()!;
         this.currentQuestion = question;
         const playersWhoCanAnswerCount = this.players.filter(p => !p.isDead).length;
-        let answeredAmount = 0;
-        let timeout;
+        
+        const counter = new CounterCollector(this, playersWhoCanAnswerCount);
+        
         const answers = await buttonCollector(this.client, {
             sendTo: this.channelId,
             embed: QuestionEmbed.change(this, true),
@@ -114,15 +116,9 @@ export class Game {
                         break;
                  }
             },
-            onClick: (entry, interaction, all, msg) => {
-                answeredAmount++;
-                timeout = setTimeout(async () => {
-                    if (answeredAmount !== answeredAmount) return;
-                    this.send({content: `**${answeredAmount}/${playersWhoCanAnswerCount} answered**`})
-                }, 800);
-            }
+            onClick: () => counter.inc()
         });
-        clearTimeout(timeout);
+        counter.stop();
         if (answers.cancelled) return;
         await answers.message!.edit({embed: QuestionEmbed.change(this, false), components: []});
 
@@ -168,7 +164,7 @@ export class Game {
             }
         });
 
-        await wait(5);
+        await wait(5000);
         if (killingFloorPlayers.length === 0) {
             this.clearBetweenPhases();
             this.trivia();
@@ -192,7 +188,7 @@ export class Game {
                 clearInterval(interval);
                 if (!this.started) return;
                 await minigame.start(this, minigame);
-                await wait(2);
+                await wait(2000);
                 this.movePhase();
             } else {
             const leftSide = rngArr(this.minigames).emoji;
