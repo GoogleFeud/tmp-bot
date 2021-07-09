@@ -29,7 +29,7 @@ export interface ButtonCollectorOptions {
     limit?: number, // How many clicks to wait for
     filter?: (user: ButtonCollectorEntry) => boolean|null|void, // Filter out clicks
     unique?: boolean, // Accept only one click per user
-    onClick?: (user: ButtonCollectorEntry, interaction: Interaction, all: Array<ButtonCollectorEntry>, message?: Message) => boolean|null|void, // Do something when a user clicks
+    onClick?: (user: ButtonCollectorEntry, interaction: Interaction, all: Array<ButtonCollectorEntry>, message?: Message) => Promise<boolean|null|void>|boolean|null|void, // Do something when a user clicks
     onError?: (cause: CollectorErrorCauses, user: ButtonCollectorEntry, interaction: Interaction) => void,
     onSend?: (thing: Interaction|Message) => void,
     timeout?: number,

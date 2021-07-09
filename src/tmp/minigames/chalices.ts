@@ -22,7 +22,7 @@ export default {
 
         const poisonPellets = await buttonCollector(game.client, {
             sendTo: game.channelId,
-            embed: MinigameEmbed.change(minigame, game, 60),
+            embed: MinigameEmbed.change(minigame, 60),
             buttons: chalices,
             unique: true,
             limit: game.safePlayers!.length,
@@ -42,7 +42,7 @@ export default {
         });
         counter.stop();
         if (poisonPellets.cancelled) return;
-        poisonPellets.message!.edit({embed: MinigameEmbed.change(minigame, game), components: []});
+        poisonPellets.message!.edit({embed: MinigameEmbed.change(minigame), components: []});
         for (const player of game.safePlayers!) {
             const choice = poisonPellets.map!.get(player.id);
             if (choice) poisonedChalices.add(+choice.customId);

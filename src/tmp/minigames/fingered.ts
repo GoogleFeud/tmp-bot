@@ -19,7 +19,7 @@ export default {
         const counter = new CounterCollector(game, totalPlayers);
         const responses = await buttonCollector(game.client, {
             sendTo: game.channelId,
-            embed: MinigameEmbed.change(minigame, game, 60),
+            embed: MinigameEmbed.change(minigame, 60),
             buttons: [
                 {
                     label: "Index",
@@ -61,7 +61,7 @@ export default {
         });
         counter.stop();
         if (responses.cancelled) return;
-        responses.message!.edit({embed: MinigameEmbed.change(minigame, game), components: []});
+        responses.message!.edit({embed: MinigameEmbed.change(minigame), components: []});
         for (const player of game.unsafePlayers!) {
             if (responses.map!.has(player.id)) player.lostFinger = responses.map!.get(player.id)!.customId as Finger;
             else player.lostFinger = rngArr(["A", "B", "C", "D"]);

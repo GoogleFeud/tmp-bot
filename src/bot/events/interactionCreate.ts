@@ -4,7 +4,7 @@ import { InteractionDataComponent } from "detritus-client/lib/structures";
 import { CollectorErrorCauses } from "../../utils/ButtonCollector";
 
 
-export default ({interaction}: GatewayClientEvents.InteractionCreate) => {
+export default async ({interaction}: GatewayClientEvents.InteractionCreate) => {
     if (!interaction.channelId) return;
     const listener = interaction.client.slashCommandClient!.buttonCollectors.get(interaction.channelId);
     const data = interaction.data;
@@ -22,7 +22,7 @@ export default ({interaction}: GatewayClientEvents.InteractionCreate) => {
         if (listener.options.filter && !listener.options.filter(obj)) return onError(CollectorErrorCauses.FILTER, obj, interaction);
         if (listener.options.unique && listener.map!.has(interaction.userId)) return onError(CollectorErrorCauses.UNIQUE, obj, interaction);
 
-        if (listener.options.onClick && listener.options.onClick(obj, interaction, listener.entries, listener.message)) {
+        if (listener.options.onClick && await listener.options.onClick(obj, interaction, listener.entries, listener.message)) {
             interaction.client.slashCommandClient!.buttonCollectors.delete(interaction.channelId);
             listener.resolve({interaction, entries: listener.entries, message: listener.message, map: listener.map});
             if (listener.timeout) clearTimeout(listener.timeout);

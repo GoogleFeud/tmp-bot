@@ -178,7 +178,7 @@ export class Game {
 
     async minigame() : Promise<void> {
         if (!this.started) return;
-        const minigame = this.minigames.find(m => m.name === "Chalices")!; //rngArr(this.minigames.filter(minigame => minigame.canRoll(this)));
+        const minigame = this.minigames.find(m => m.name === "Dice")!; //rngArr(this.minigames.filter(minigame => minigame.canRoll(this)));
         if (minigame.unique) this.minigames.splice(this.minigames.indexOf(minigame), 1);
         let timer: number = 0;
         let message: Message;

@@ -25,7 +25,7 @@ export default {
             limit: totalPlayersInGame,
             timeout: 60_000,
             unique: true,
-            embed: MinigameEmbed.change(minigame, game, 60),
+            embed: MinigameEmbed.change(minigame, 60),
             filter: ({user}) => game.isAlive(user.id),
             onError: (cause, user, interaction) => {
                  switch (cause) {
@@ -41,7 +41,7 @@ export default {
         });
         counter.stop();
         if (res.cancelled) return;
-        res.message!.edit({embed: MinigameEmbed.change(minigame, game, undefined), components: []});
+        res.message!.edit({embed: MinigameEmbed.change(minigame, undefined), components: []});
         const votes: Record<string, number> = {};
         for (const vote of res.entries) {
             if (!votes[vote.options[0]]) votes[vote.options[0]] = 1;

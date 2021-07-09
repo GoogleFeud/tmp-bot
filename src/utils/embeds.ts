@@ -11,10 +11,10 @@ export const QuestionEmbed = new EditableEmbed<(game: Game, timer: boolean) => v
     description: `**${game.currentQuestion!.question}**\n\n${game.currentQuestion!.all_answers.map((answer, index) => `${indexToLetter[index]}) ${answer}`).join("\n")}`,
 }));
 
-export const MinigameEmbed = new EditableEmbed<(minigame: Minigame, game: Game, showTimer?: number) => void>({
+export const MinigameEmbed = new EditableEmbed<(minigame: Minigame, showTimer?: number, customDesc?: string) => void>({
     color: 0xba1900
-}, (minigame, game, showTimer) => ({
+}, (minigame, showTimer, customDesc) => ({
     title: `${minigame.emoji} ${minigame.name}`,
-    description: minigame.description,
+    description: customDesc || minigame.description,
     thumbnail: showTimer ? { url: process.env[`TIMER_${showTimer}`] } : undefined
 }));
