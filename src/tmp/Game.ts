@@ -135,7 +135,7 @@ export class Game {
         for (const [, player] of this.players) {
             // Ghosts are counted as safe players. Maybe change that?
             if (player.isDead) continue;
-            if (player.isSafe) safePlayers.push(player);
+            if (player.isSafe || player.isGhost) safePlayers.push(player);
             else killingFloorPlayers.push(player);
         }
 
@@ -146,13 +146,13 @@ export class Game {
                 description: `||${indexToLetter[question.correct_answer_pos]}) ${question.correct_answer}||`,
                 fields: [
                     {
-                        name: "Safe players",
+                        name: "Who got it right",
                         value: this.players.filter(p => p.isSafe).map(p => p.format(this)).join("\n") || "Nobody",
                         inline: true
                     },
                     {
-                        name: "Killing floor",
-                        value: killingFloorPlayers.map(p => p.format(this)).join("\n") || "Nobody",
+                        name: "Who got it wrong",
+                        value: this.players.filter(p => !p.isSafe && !p.isGhost).map(p => p.format(this)).join("\n") || "Nobody",
                         inline: true
                     },
                     {
@@ -178,7 +178,7 @@ export class Game {
 
     async minigame() : Promise<void> {
         if (!this.started) return;
-        const minigame = this.minigames.find(m => m.name === "Dice")!; //rngArr(this.minigames.filter(minigame => minigame.canRoll(this)));
+        const minigame = this.minigames.find(m => m.name === "Decisions, Decisions")!; //rngArr(this.minigames.filter(minigame => minigame.canRoll(this)));
         if (minigame.unique) this.minigames.splice(this.minigames.indexOf(minigame), 1);
         let timer: number = 0;
         let message: Message;
