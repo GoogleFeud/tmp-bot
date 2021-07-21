@@ -21,7 +21,7 @@ export class CounterCollector {
         this.timeout = setTimeout(() => {
             if (answered !== this.answered) return;
             this.client.rest.createMessage(this.channelId!, { content: `**${answered}/${this.total} submitted**` });
-        }, 1200);
+        }, 800);
     }
 
     stop() : void {

@@ -28,6 +28,14 @@ export default class Game extends CustomSlashCommand {
                 inline: true
             })
         }
+        if (game.currentMinigame) {
+            fields.push({
+                name: "Current minigame",
+                value: `${game.currentMinigame.emoji} ${game.currentMinigame.name}`,
+                inline: true
+            });
+        }
+        
         ctx.respond({
             type: InteractionCallbackTypes.CHANNEL_MESSAGE_WITH_SOURCE,
             data: {

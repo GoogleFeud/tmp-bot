@@ -33,6 +33,7 @@ export class Game {
     started = false
     phase = GamePhases.LOBBY
     currentQuestion?: TriviaQuestion
+    currentMinigame?: Minigame
     questionCount = 0
     minigames: Array<Minigame>
     safePlayers?: Array<Player>
@@ -178,7 +179,9 @@ export class Game {
 
     async minigame() : Promise<void> {
         if (!this.started) return;
-        const minigame = this.minigames.find(m => m.name === "Decisions, Decisions")!; //rngArr(this.minigames.filter(minigame => minigame.canRoll(this)));
+        delete this.currentQuestion;
+        const minigame = rngArr(this.minigames.filter(minigame => minigame.canRoll(this)));
+        this.currentMinigame = minigame;
         if (minigame.unique) this.minigames.splice(this.minigames.indexOf(minigame), 1);
         let timer: number = 0;
         let message: Message;
@@ -202,7 +205,6 @@ export class Game {
     }
 
     clearBetweenPhases() : void {
-        delete this.currentQuestion;
         delete this.safePlayers;
         delete this.unsafePlayers;
         for (const [, player] of this.players) {
